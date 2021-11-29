@@ -108,20 +108,20 @@
 
     <section class="relative" v-if="sel">
       <h3 class="text-lg leading-6 font-medium text-gray-900 my-8">
-        VUE - USD
+        {{sel.name}} - USD
       </h3>
       <div class="flex items-end border-gray-600 border-b border-l h-64">
         <div
             :key="index"
             v-for="(gr, index) in roundGraph()"
-            :style="{ height: gr+'%'}"
+            :style="{ height: `${gr}%`}"
             class="bg-purple-800 border w-10"
         ></div>
       </div>
       <button
           type="button"
           class="absolute top-0 right-0"
-          @click="sel = null"
+          @click="closeGraph"
       >
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -168,28 +168,46 @@ export default {
         let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${newCurrency.name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
 
         const data = await request.json()
-        console.log(data.USD)
-        this.currencies[0].price = data
-        this.graph.push(data)
-        console.log(this.graph)
+
+
+
+        this.currencies.map(cur => {
+          if(cur.name === newCurrency.name){
+            return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
+          } else {
+            return cur
+          }
+        })
+        if(this.sel?.name === newCurrency.name){
+
+          this.graph.push(data.USD)
+        }
+        console.log(this.currencies)
       }, 3000)
 
       this.value = ''
     },
+
+
     deleteCurrency(cur) {
       this.currencies = this.currencies.filter(currency => currency !== cur)
       this.sel = null
     },
     selected(currency){
       this.sel = currency
-      clearInterval(this.interval)
+      this.graph = []
     },
     roundGraph(){
-      const maxVal = Math.max(this.graph)
-      const minVal = Math.min(this.graph)
+      const maxVal = Math.max(...this.graph)
+      const minVal = Math.min(...this.graph)
       return  this.graph.map((gr) => {
-        return  5+(gr - minVal) * 100/(maxVal - minVal)
+        return  5+((gr - minVal) * 95)/(maxVal - minVal)
       })
+    },
+
+    closeGraph(){
+      this.sel = null
+      clearInterval(this.interval)
     }
 
   }
