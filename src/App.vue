@@ -156,51 +156,43 @@ export default {
     }
   },
   methods: {
-    addCurrency(nameTag) {
-      let newCurrency
-      // if (this.mainArrayCrypto.filter(mainEl => mainEl.name === this.value).length !== 0) {
+    async addCurrency(nameTag) {
+      let newCurrency = {price: '-', name: this.value || nameTag}
 
-        newCurrency = {price: '-', name: this.value ||  nameTag}
+      if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
+        this.currencies.push(newCurrency)
+        this.value = ''
+        this.flagDouble = false
+        this.interval = await this.fetchCoin(newCurrency.name)
+        window.localStorage.setItem('currencies', JSON.stringify(this.currencies))
+      } else {
+        this.flagDouble = true
+        this.value = nameTag
+      }
+    },
 
-        if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
-          this.currencies.push(newCurrency)
-          this.interval = setInterval(async () => {
-            let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${newCurrency.name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
-            const data = await request.json()
-            this.currencies.map(cur => {
-              if (cur.name === newCurrency.name) {
-                return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
-              } else {
-                return cur
-              }
-            })
-            if (this.sel?.name === newCurrency.name) {
-              this.graph.push(data.USD)
-            }
-          }, 3000)
-          this.value = ''
-          this.flagDouble = false
-        } else {
-          this.flagDouble = true
-          this.value = nameTag
+    async fetchCoin(name) {
+      setInterval(async () => {
+        let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
+        const data = await request.json()
+        this.currencies.map(cur => {
+          if (cur.name === name) {
+            return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
+          } else {
+            return cur
+          }
+        })
+
+        if (this.sel?.name === name) {
+          this.graph.push(data.USD)
         }
-      // }
-
-
-
+      }, 3000)
     },
 
     updtInput(value) {
       this.flagDouble = false
       this.tags = []
       this.mainArrayCrypto.forEach(elem => {
-        // let cur = value.toLowerCase()
-        // // let index = value.length
-        // if(elem.toLowerCase().search(cur)){
-        //   if(this.tags.length < 4){
-        //     this.tags.push(elem)
-        //   }
-        // }
         if (value === '') {
           this.tags = []
         } else {
@@ -217,6 +209,7 @@ export default {
 
     deleteCurrency(cur) {
       this.currencies = this.currencies.filter(currency => currency !== cur)
+
       this.sel = null
     },
     selected(currency) {
@@ -249,8 +242,22 @@ export default {
       }
     }
   },
+
+  watch : {
+    currency: function (){
+      window.localStorage.setItem('currencies', JSON.stringify(this.currencies))
+      this.currencies.forEach(cur => {
+        this.fetchCoin(cur.name)
+      })
+
+}
+  },
   mounted() {
     this.fetchCrypto()
+    let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
+    if(localCurrencyes.length > 0){
+this.currencies = localCurrencyes
+    }
     // this.createMainArr()
   }
 }
