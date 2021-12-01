@@ -9,7 +9,8 @@
           <div class="mt-1 relative rounded-md shadow-md">
             <input
                 @keydown.enter="addCurrency"
-                v-model="value"
+                @input="updtInput($event.target.value)"
+                v-model.trim="value"
                 type="text"
                 name="wallet"
                 id="wallet"
@@ -19,23 +20,14 @@
           </div>
           <div class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap">
             <span
+                @click="addCurrency(tag)"
+                :key="tag"
+                v-for="tag in tags"
                 class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-              BTC
-            </span>
-            <span
-                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-              DOGE
-            </span>
-            <span
-                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-              BCH
-            </span>
-            <span
-                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-              CHD
+              {{ tag }}
             </span>
           </div>
-          <div class="text-sm text-red-600">Такой тикер уже добавлен</div>
+          <div v-show="flagDouble" class="text-sm text-red-600">Такой тикер уже добавлен</div>
         </div>
       </div>
       <button
@@ -157,37 +149,71 @@ export default {
       sel: null,
       interval: null,
       graph: [],
-      allCrypto: []
+      allCrypto: {},
+      mainArrayCrypto: [],
+      tags: [],
+      flagDouble: false
     }
   },
   methods: {
-    addCurrency() {
-      const newCurrency = {price: '-', name: this.value}
-      this.currencies.push(newCurrency)
+    addCurrency(nameTag) {
+      let newCurrency
+      // if (this.mainArrayCrypto.filter(mainEl => mainEl.name === this.value).length !== 0) {
 
-      this.interval = setInterval(async () => {
-        let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${newCurrency.name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
+        newCurrency = {price: '-', name: this.value ||  nameTag}
 
-        const data = await request.json()
-
-
-        this.currencies.map(cur => {
-          if (cur.name === newCurrency.name) {
-            return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
-          } else {
-            return cur
-          }
-        })
-        if (this.sel?.name === newCurrency.name) {
-
-          this.graph.push(data.USD)
+        if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
+          this.currencies.push(newCurrency)
+          this.interval = setInterval(async () => {
+            let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${newCurrency.name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
+            const data = await request.json()
+            this.currencies.map(cur => {
+              if (cur.name === newCurrency.name) {
+                return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
+              } else {
+                return cur
+              }
+            })
+            if (this.sel?.name === newCurrency.name) {
+              this.graph.push(data.USD)
+            }
+          }, 3000)
+          this.value = ''
+          this.flagDouble = false
+        } else {
+          this.flagDouble = true
+          this.value = nameTag
         }
-        console.log(this.currencies)
-      }, 3000)
+      // }
 
-      this.value = ''
+
+
     },
 
+    updtInput(value) {
+      this.flagDouble = false
+      this.tags = []
+      this.mainArrayCrypto.forEach(elem => {
+        // let cur = value.toLowerCase()
+        // // let index = value.length
+        // if(elem.toLowerCase().search(cur)){
+        //   if(this.tags.length < 4){
+        //     this.tags.push(elem)
+        //   }
+        // }
+        if (value === '') {
+          this.tags = []
+        } else {
+          if (elem.toLowerCase().search(value.toLowerCase()) !== -1) {
+            if (this.tags.length < 4) {
+              this.tags.push(elem)
+            }
+          }
+        }
+
+
+      })
+    },
 
     deleteCurrency(cur) {
       this.currencies = this.currencies.filter(currency => currency !== cur)
@@ -214,17 +240,18 @@ export default {
       let response = await fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
       const data = await response.json()
       this.allCrypto = data.Data
+      this.createMainArr()
     },
 
-    // createMainArr(obj, arr, param){
-    //   for (let key in obj) {
-    //     arr.push(key.param)
-    //   }
-    //   return arr
-    // }
+    createMainArr() {
+      for (let key in this.allCrypto) {
+        this.mainArrayCrypto.push(this.allCrypto[key]['Symbol'])
+      }
+    }
   },
   mounted() {
     this.fetchCrypto()
+    // this.createMainArr()
   }
 }
 </script>
