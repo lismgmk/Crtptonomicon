@@ -10,7 +10,7 @@
             <input
                 @keydown.enter="addCurrency"
                 @input="updtInput($event.target.value)"
-                v-model.trim="value"
+                v-model.trim="inputVal"
                 type="text"
                 name="wallet"
                 id="wallet"
@@ -144,7 +144,7 @@
 export default {
   data() {
     return {
-      value: '',
+      inputVal: '',
       currencies: [],
       sel: null,
       interval: null,
@@ -157,17 +157,18 @@ export default {
   },
   methods: {
     async addCurrency(nameTag) {
-      let newCurrency = {price: '-', name: this.value || nameTag}
+      let curentVal = nameTag ? this.inputVal : nameTag
+      let newCurrency = {price: '-', name:  curentVal}
 
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies.push(newCurrency)
-        this.value = ''
+        this.inputVal = ''
         this.flagDouble = false
         this.interval = await this.fetchCoin(newCurrency.name)
         window.localStorage.setItem('currencies', JSON.stringify(this.currencies))
       } else {
         this.flagDouble = true
-        this.value = nameTag
+        this.inputVal = nameTag
       }
     },
 
@@ -202,8 +203,6 @@ export default {
             }
           }
         }
-
-
       })
     },
 
@@ -243,21 +242,37 @@ export default {
     }
   },
 
-  watch : {
-    currency: function (){
-      window.localStorage.setItem('currencies', JSON.stringify(this.currencies))
+  watch: {
+    currency: function () {
+      // window.localStorage.setItem('currencies', JSON.stringify(this.currencies))
       this.currencies.forEach(cur => {
         this.fetchCoin(cur.name)
       })
-
-}
+    },
+    inputVal: {
+      function() {
+        this.flagDouble = false
+        this.tags = []
+        this.mainArrayCrypto.forEach(elem => {
+          if (this.inputVal === '') {
+            this.tags = []
+          } else {
+            if (elem.toLowerCase().search(this.inputVal.toLowerCase()) !== -1) {
+              if (this.tags.length < 4) {
+                this.tags.push(elem)
+              }
+            }
+          }
+        })
+      }
+    }
   },
   mounted() {
     this.fetchCrypto()
-    let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
-    if(localCurrencyes.length > 0){
-this.currencies = localCurrencyes
-    }
+    // let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
+    // if (localCurrencyes.length > 0) {
+    //   this.currencies = localCurrencyes
+    // }
     // this.createMainArr()
   }
 }
