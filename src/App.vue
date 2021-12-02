@@ -52,7 +52,6 @@
     </section>
 
 
-
     <template v-if="currencies.length">
       <div>
         <hr class="w-full border-t border-gray-600 my-4"/>
@@ -64,7 +63,8 @@
             @input="filterCyrrencies"
         />
         <button
-
+            v-show="currentPage > 1"
+            @click='currentPage = currentPage - 1'
             type="button"
             class="mr-4 my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
         >
@@ -73,11 +73,11 @@
         </button>
 
         <button
-
+            v-show="nextBtn"
+            @click='currentPage = currentPage + 1'
             type="button"
             class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
         >
-
           Вперед
         </button>
 
@@ -185,30 +185,34 @@ export default {
       tags: [],
       flagDouble: false,
 
-      filter: [],
-      // currentPage: 0,
-      // allPages: 0,
-      // pageLimit: 5,
-      // startCurrtncyPage: 0,
-      // endCurrencyPage: 0,
-      // shownCurrency: []
+      filter: '',
+      currentPage: 1,
+      nextBtn: true
     }
   },
   methods: {
-    filterCyrrencies(){
-      return this.currencies.filter(currency => {
-        return  currency.name.includes(this.filter)
-      })
+    filterCyrrencies() {
+
+
+      let start = 6 * (this.currentPage - 1)
+      let end = start + 6
+
+
+      const elem = this.currencies
+          .filter(currency => {
+            return currency.name.toLowerCase().includes(this.filter.toLowerCase())
+          })
+      if(elem.length/6 <= this.currentPage){
+        this.nextBtn = false
+      } else {
+        this.nextBtn = true
+      }
+
+      return   elem.slice(start, end)
     },
 
-    // countPage(current) {
-    //   this.startCurrtncy = this.pageLimit * (current-1)
-    //   this.endCurrencyPage = this.startCurrtncyPage + this.pageLimit - 1
-    //   this.shownCurrency = this.currencies.slice(this.startCurrtncy, this.endCurrencyPage)
-    // },
-
     async addCurrency(nameTag) {
-      let newCurrency = {price: '-', name:  nameTag}
+      let newCurrency = {price: '-', name: nameTag}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies.push(newCurrency)
         this.inputVal = ''
@@ -246,12 +250,14 @@ export default {
     },
 
     updtInput() {
+      this.filter = ''
+      this.tags = []
       this.flagDouble = false
       this.mainArrayCrypto.forEach(elem => {
         if (this.inputVal === '') {
           this.tags = []
         } else {
-          if (elem.toLowerCase().search(this.inputVal.toLowerCase()) !== -1) {
+          if (elem.toLowerCase().includes(this.inputVal.toLowerCase())) {
             if (this.tags.length < 4) {
               this.tags.push(elem)
             }
@@ -305,28 +311,10 @@ export default {
         this.fetchCoin(cur.name)
       })
     },
-    // currentPage(val) {
-    //   this.countPage(val)
-    //   console.log(val)
-    // }
-  //   inputVal(val) {
-  //       this.flagDouble = false
-  //       this.tags = []
-  //       this.mainArrayCrypto.forEach(elem => {
-  //         if (val === '') {
-  //           this.tags = []
-  //         } else {
-  //           if (elem.toLowerCase().search(val.toLowerCase()) !== -1) {
-  //             if (this.tags.length < 4) {
-  //               this.tags.push(elem)
-  //             }
-  //           }
-  //         }
-  //       })
-  //       console.log(this.tags)
-  //
-  //
-  //   }
+
+    filter(){
+      this.currentPage = 1
+    }
   },
 
   mounted() {
