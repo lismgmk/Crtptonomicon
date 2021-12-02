@@ -8,9 +8,9 @@
           >
           <div class="mt-1 relative rounded-md shadow-md">
             <input
-                @keydown.enter="addCurrency"
-                @input="updtInput($event.target.value)"
-                v-model.trim="inputVal"
+                @keydown.enter="addCurrency(inputVal)"
+                v-model="inputVal"
+                @input="updtInput"
                 type="text"
                 name="wallet"
                 id="wallet"
@@ -31,7 +31,7 @@
         </div>
       </div>
       <button
-          @click="addCurrency"
+          @click="addCurrency(inputVal)"
           type="button"
           class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
       >
@@ -156,16 +156,16 @@ export default {
     }
   },
   methods: {
-    async addCurrency(nameTag) {
-      let curentVal = nameTag ? this.inputVal : nameTag
-      let newCurrency = {price: '-', name:  curentVal}
 
+    async addCurrency(nameTag) {
+      let newCurrency = {price: '-', name:  nameTag}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies.push(newCurrency)
         this.inputVal = ''
         this.flagDouble = false
-        this.interval = await this.fetchCoin(newCurrency.name)
-        window.localStorage.setItem('currencies', JSON.stringify(this.currencies))
+        localStorage.setItem('currencies', JSON.stringify(this.currencies))
+        await this.fetchCoin(newCurrency.name)
+        this.tags = []
       } else {
         this.flagDouble = true
         this.inputVal = nameTag
@@ -173,31 +173,35 @@ export default {
     },
 
     async fetchCoin(name) {
-      setInterval(async () => {
+      this.interval = setInterval(async () => {
         let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
-        const data = await request.json()
-        this.currencies.map(cur => {
-          if (cur.name === name) {
-            return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
-          } else {
-            return cur
-          }
-        })
+        try {
+          const data = await request.json()
+          this.currencies.map(cur => {
+            if (cur.name === name) {
+              return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
+            } else {
+              return cur
+            }
+          })
 
-        if (this.sel?.name === name) {
-          this.graph.push(data.USD)
+          if (this.sel?.name === name) {
+            this.graph.push(data.USD)
+          }
+        } catch (e) {
+          console.log('!!! Same error')
+          clearInterval(this.interval)
         }
       }, 3000)
     },
 
-    updtInput(value) {
+    updtInput() {
       this.flagDouble = false
-      this.tags = []
       this.mainArrayCrypto.forEach(elem => {
-        if (value === '') {
+        if (this.inputVal === '') {
           this.tags = []
         } else {
-          if (elem.toLowerCase().search(value.toLowerCase()) !== -1) {
+          if (elem.toLowerCase().search(this.inputVal.toLowerCase()) !== -1) {
             if (this.tags.length < 4) {
               this.tags.push(elem)
             }
@@ -208,13 +212,15 @@ export default {
 
     deleteCurrency(cur) {
       this.currencies = this.currencies.filter(currency => currency !== cur)
-
+      localStorage.setItem('currencies', JSON.stringify(this.currencies))
       this.sel = null
     },
+
     selected(currency) {
       this.sel = currency
       this.graph = []
     },
+
     roundGraph() {
       const maxVal = Math.max(...this.graph)
       const minVal = Math.min(...this.graph)
@@ -243,36 +249,36 @@ export default {
   },
 
   watch: {
-    currency: function () {
-      // window.localStorage.setItem('currencies', JSON.stringify(this.currencies))
-      this.currencies.forEach(cur => {
+    currencies(val) {
+      val.forEach(cur => {
         this.fetchCoin(cur.name)
       })
     },
-    inputVal: {
-      function() {
-        this.flagDouble = false
-        this.tags = []
-        this.mainArrayCrypto.forEach(elem => {
-          if (this.inputVal === '') {
-            this.tags = []
-          } else {
-            if (elem.toLowerCase().search(this.inputVal.toLowerCase()) !== -1) {
-              if (this.tags.length < 4) {
-                this.tags.push(elem)
-              }
-            }
-          }
-        })
-      }
-    }
+  //   inputVal(val) {
+  //       this.flagDouble = false
+  //       this.tags = []
+  //       this.mainArrayCrypto.forEach(elem => {
+  //         if (val === '') {
+  //           this.tags = []
+  //         } else {
+  //           if (elem.toLowerCase().search(val.toLowerCase()) !== -1) {
+  //             if (this.tags.length < 4) {
+  //               this.tags.push(elem)
+  //             }
+  //           }
+  //         }
+  //       })
+  //       console.log(this.tags)
+  //
+  //
+  //   }
   },
   mounted() {
     this.fetchCrypto()
-    // let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
-    // if (localCurrencyes.length > 0) {
-    //   this.currencies = localCurrencyes
-    // }
+    let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
+    if (localCurrencyes.length > 0) {
+      this.currencies = localCurrencyes
+    }
     // this.createMainArr()
   }
 }
