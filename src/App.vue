@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" style="margin: 30px">
     <section>
       <div class="flex">
         <div class="max-w-xs">
@@ -51,13 +51,44 @@
       </button>
     </section>
 
+
+
     <template v-if="currencies.length">
+      <div>
+        <hr class="w-full border-t border-gray-600 my-4"/>
+        Фильтр
+        <input
+            v-model="filter"
+            class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
+            placeholder="Например DOGE"
+            @input="filterCyrrencies"
+        />
+        <button
+
+            type="button"
+            class="mr-4 my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+
+          Назад
+        </button>
+
+        <button
+
+            type="button"
+            class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+
+          Вперед
+        </button>
+
+      </div>
+
       <hr class="w-full border-t border-gray-600 my-4"/>
       <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div
             @click="selected(currency)"
             :key="index"
-            v-for="(currency, index) in currencies"
+            v-for="(currency, index) in filterCyrrencies()"
             :class="{
             'border-4': sel === currency
         }"
@@ -152,10 +183,29 @@ export default {
       allCrypto: {},
       mainArrayCrypto: [],
       tags: [],
-      flagDouble: false
+      flagDouble: false,
+
+      filter: [],
+      // currentPage: 0,
+      // allPages: 0,
+      // pageLimit: 5,
+      // startCurrtncyPage: 0,
+      // endCurrencyPage: 0,
+      // shownCurrency: []
     }
   },
   methods: {
+    filterCyrrencies(){
+      return this.currencies.filter(currency => {
+        return  currency.name.includes(this.filter)
+      })
+    },
+
+    // countPage(current) {
+    //   this.startCurrtncy = this.pageLimit * (current-1)
+    //   this.endCurrencyPage = this.startCurrtncyPage + this.pageLimit - 1
+    //   this.shownCurrency = this.currencies.slice(this.startCurrtncy, this.endCurrencyPage)
+    // },
 
     async addCurrency(nameTag) {
       let newCurrency = {price: '-', name:  nameTag}
@@ -192,7 +242,7 @@ export default {
           console.log('!!! Same error')
           clearInterval(this.interval)
         }
-      }, 3000)
+      }, 150000)
     },
 
     updtInput() {
@@ -249,11 +299,16 @@ export default {
   },
 
   watch: {
+
     currencies(val) {
       val.forEach(cur => {
         this.fetchCoin(cur.name)
       })
     },
+    // currentPage(val) {
+    //   this.countPage(val)
+    //   console.log(val)
+    // }
   //   inputVal(val) {
   //       this.flagDouble = false
   //       this.tags = []
@@ -273,12 +328,16 @@ export default {
   //
   //   }
   },
+
   mounted() {
     this.fetchCrypto()
     let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
     if (localCurrencyes.length > 0) {
       this.currencies = localCurrencyes
+      console.log(this.currencies)
     }
+
+
     // this.createMainArr()
   }
 }
