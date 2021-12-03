@@ -191,13 +191,10 @@ export default {
     }
   },
   methods: {
+
     filterCyrrencies() {
-
-
       let start = 6 * (this.currentPage - 1)
       let end = start + 6
-
-
       const elem = this.currencies
           .filter(currency => {
             return currency.name.toLowerCase().includes(this.filter.toLowerCase())
@@ -207,7 +204,6 @@ export default {
       } else {
         this.nextBtn = true
       }
-
       return   elem.slice(start, end)
     },
 
@@ -301,10 +297,21 @@ export default {
       for (let key in this.allCrypto) {
         this.mainArrayCrypto.push(this.allCrypto[key]['Symbol'])
       }
-    }
+    },
+
+
   },
 
   watch: {
+
+    filter(){
+      this.currentPage = 1
+      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
+    },
+
+    currentPage(){
+      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
+    },
 
     currencies(val) {
       val.forEach(cur => {
@@ -312,21 +319,29 @@ export default {
       })
     },
 
-    filter(){
-      this.currentPage = 1
-    }
+
   },
 
-  mounted() {
+  created() {
+    const windowData = Object.fromEntries(
+        new URL(window.location).searchParams.entries()
+    );
+
+    if (windowData.filter) {
+      this.filter = windowData.filter;
+    }
+
+    if (windowData.page) {
+      this.page = windowData.page;
+    }
+
     this.fetchCrypto()
     let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
     if (localCurrencyes.length > 0) {
       this.currencies = localCurrencyes
-      console.log(this.currencies)
     }
 
 
-    // this.createMainArr()
   }
 }
 </script>
