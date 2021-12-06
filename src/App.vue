@@ -60,7 +60,7 @@
             v-model="filter"
             class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
             placeholder="Например DOGE"
-            @input="filterCyrrencies"
+
         />
         <button
             v-show="currentPage > 1"
@@ -88,7 +88,7 @@
         <div
             @click="selected(currency)"
             :key="index"
-            v-for="(currency, index) in filterCyrrencies()"
+            v-for="(currency, index) in paginationCurrencies"
             :class="{
             'border-4': sel === currency
         }"
@@ -136,7 +136,7 @@
       <div class="flex items-end border-gray-600 border-b border-l h-64">
         <div
             :key="index"
-            v-for="(gr, index) in roundGraph()"
+            v-for="(gr, index) in roundGraph"
             :style="{ height: `${gr}%`}"
             class="bg-purple-800 border w-10"
         ></div>
@@ -187,33 +187,76 @@ export default {
 
       filter: '',
       currentPage: 1,
-      nextBtn: true
+
     }
   },
-  methods: {
+  computed: {
+    roundGraph:function() {
+      const maxVal = Math.max(...this.graph)
+      const minVal = Math.min(...this.graph)
+      if(maxVal === minVal){
+        return this.graph.map(() => 50)
+      } else {
+        return this.graph.map((gr) => {
+          return 5 + ((gr - minVal) * 95) / (maxVal - minVal)
+        })
+      }
 
-    filterCyrrencies() {
-      let start = 6 * (this.currentPage - 1)
-      let end = start + 6
-      const elem = this.currencies
+    },
+
+
+    startCurrency: function (){
+      return 6 * (this.currentPage - 1)
+    },
+    endCurrency: function () {
+      return this.startCurrency + 6
+    },
+    filterCurrencies: function (){
+      return  this.currencies
           .filter(currency => {
             return currency.name.toLowerCase().includes(this.filter.toLowerCase())
           })
-      if(elem.length/6 <= this.currentPage){
-        this.nextBtn = false
-      } else {
-        this.nextBtn = true
-      }
-      return   elem.slice(start, end)
     },
+
+    nextBtn: function (){
+      return this.currencies.length > this.endCurrency
+    },
+
+    paginationCurrencies: function (){
+      return this.filterCurrencies.slice(this.startCurrency, this.endCurrency)
+    },
+    filterUrlParams: function (){
+      return{
+        filter: this.filter,
+        currentPage: this.currentPage
+      }
+    }
+
+  },
+
+  methods: {
+
+    // filterCurrencies() {
+    //   let start = 6 * (this.currentPage - 1)
+    //   let end = start + 6
+    //   const elem = this.currencies
+    //       .filter(currency => {
+    //         return currency.name.toLowerCase().includes(this.filter.toLowerCase())
+    //       })
+    //   if (elem.length / 6 <= this.currentPage) {
+    //     this.nextBtn = false
+    //   } else {
+    //     this.nextBtn = true
+    //   }
+    //   return elem.slice(start, end)
+    // },
 
     async addCurrency(nameTag) {
       let newCurrency = {price: '-', name: nameTag}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
-        this.currencies.push(newCurrency)
+        this.currencies = [...this.currencies, newCurrency]
         this.inputVal = ''
         this.flagDouble = false
-        localStorage.setItem('currencies', JSON.stringify(this.currencies))
         await this.fetchCoin(newCurrency.name)
         this.tags = []
       } else {
@@ -265,7 +308,10 @@ export default {
     deleteCurrency(cur) {
       this.currencies = this.currencies.filter(currency => currency !== cur)
       localStorage.setItem('currencies', JSON.stringify(this.currencies))
-      this.sel = null
+      if(this.sel === cur){
+        this.sel = null
+      }
+
     },
 
     selected(currency) {
@@ -273,13 +319,7 @@ export default {
       this.graph = []
     },
 
-    roundGraph() {
-      const maxVal = Math.max(...this.graph)
-      const minVal = Math.min(...this.graph)
-      return this.graph.map((gr) => {
-        return 5 + ((gr - minVal) * 95) / (maxVal - minVal)
-      })
-    },
+
 
     closeGraph() {
       this.sel = null
@@ -304,16 +344,27 @@ export default {
 
   watch: {
 
-    filter(){
-      this.currentPage = 1
-      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
+    paginationCurrencies() {
+      if(this.paginationCurrencies.length === 0 && this.currentPage > 1){
+       this.currentPage -= 1
+      }
     },
 
-    currentPage(){
-      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
+    filter() {
+      this.currentPage = 1
+      // window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
     },
+
+
+
+    filterUrlParams(value){
+      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${value.filter}&page=${value.currentPage}`);
+    },
+
 
     currencies(val) {
+      localStorage.setItem('currencies', JSON.stringify(this.currencies))
+
       val.forEach(cur => {
         this.fetchCoin(cur.name)
       })
@@ -326,13 +377,13 @@ export default {
     const windowData = Object.fromEntries(
         new URL(window.location).searchParams.entries()
     );
-
     if (windowData.filter) {
       this.filter = windowData.filter;
     }
 
     if (windowData.page) {
-      this.page = windowData.page;
+      this.currentPage = windowData.page;
+      console.log(this.currentPage)
     }
 
     this.fetchCrypto()
