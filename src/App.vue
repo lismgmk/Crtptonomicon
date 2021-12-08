@@ -99,7 +99,7 @@
               {{ currency.name }} - USD
             </dt>
             <dd class="mt-1 text-3xl font-semibold text-gray-900">
-              {{ currency.price }}
+              {{ formatedCurrecy(currency.price) }}
             </dd>
           </div>
           <div class="w-full border-t border-gray-200"></div>
@@ -172,6 +172,8 @@
 </template>
 
 <script>
+import {loadCurrency} from "@/api";
+
 export default {
   data() {
     return {
@@ -236,28 +238,13 @@ export default {
 
   methods: {
 
-    // filterCurrencies() {
-    //   let start = 6 * (this.currentPage - 1)
-    //   let end = start + 6
-    //   const elem = this.currencies
-    //       .filter(currency => {
-    //         return currency.name.toLowerCase().includes(this.filter.toLowerCase())
-    //       })
-    //   if (elem.length / 6 <= this.currentPage) {
-    //     this.nextBtn = false
-    //   } else {
-    //     this.nextBtn = true
-    //   }
-    //   return elem.slice(start, end)
-    // },
-
     async addCurrency(nameTag) {
       let newCurrency = {price: '-', name: nameTag}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies = [...this.currencies, newCurrency]
         this.inputVal = ''
         this.flagDouble = false
-        await this.fetchCoin(newCurrency.name)
+        // await this.fetchCoin()
         this.tags = []
       } else {
         this.flagDouble = true
@@ -265,27 +252,22 @@ export default {
       }
     },
 
-    async fetchCoin(name) {
-      this.interval = setInterval(async () => {
-        let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
-        try {
-          const data = await request.json()
-          this.currencies.map(cur => {
-            if (cur.name === name) {
-              return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
-            } else {
-              return cur
-            }
-          })
+    formatedCurrecy(price){
+      if(price === '') {
+        return
+      } else {
+        return  price < 1 ? price.toPrecision(2) : price.toFixed(2)
+      }
+    },
 
-          if (this.sel?.name === name) {
-            this.graph.push(data.USD)
-          }
-        } catch (e) {
-          console.log('!!! Same error')
-          clearInterval(this.interval)
-        }
-      }, 150000)
+    async fetchCoin() {
+       const dataCurrency = await loadCurrency(this.currencies.map(cur => cur.name))
+        this.currencies = dataCurrency
+        console.log(this.currencies)
+        // if (this.sel?.name === name) {
+        //     this.graph.push(currencyData.USD)
+        // }
+
     },
 
     updtInput() {
@@ -323,7 +305,6 @@ export default {
 
     closeGraph() {
       this.sel = null
-      clearInterval(this.interval)
     },
 
     async fetchCrypto() {
@@ -352,24 +333,15 @@ export default {
 
     filter() {
       this.currentPage = 1
-      // window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
     },
-
-
 
     filterUrlParams(value){
       window.history.pushState(null, document.title, `${window.location.pathname}?filter=${value.filter}&page=${value.currentPage}`);
     },
 
-
-    currencies(val) {
+    currencies() {
       localStorage.setItem('currencies', JSON.stringify(this.currencies))
-
-      val.forEach(cur => {
-        this.fetchCoin(cur.name)
-      })
     },
-
 
   },
 
@@ -391,7 +363,7 @@ export default {
     if (localCurrencyes.length > 0) {
       this.currencies = localCurrencyes
     }
-
+    setInterval(this.fetchCoin , 1000)
 
   }
 }
