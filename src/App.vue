@@ -60,7 +60,7 @@
             v-model="filter"
             class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
             placeholder="Например DOGE"
-            @input="filterCyrrencies"
+
         />
         <button
             v-show="currentPage > 1"
@@ -88,7 +88,7 @@
         <div
             @click="selected(currency)"
             :key="index"
-            v-for="(currency, index) in filterCyrrencies()"
+            v-for="(currency, index) in paginationCurrencies"
             :class="{
             'border-4': sel === currency
         }"
@@ -136,7 +136,7 @@
       <div class="flex items-end border-gray-600 border-b border-l h-64">
         <div
             :key="index"
-            v-for="(gr, index) in roundGraph()"
+            v-for="(gr, index) in roundGraph"
             :style="{ height: `${gr}%`}"
             class="bg-purple-800 border w-10"
         ></div>
@@ -172,10 +172,7 @@
 </template>
 
 <script>
-import {loadCurrency} from "./api";
-
 export default {
-
   data() {
     return {
       inputVal: '',
@@ -190,34 +187,77 @@ export default {
 
       filter: '',
       currentPage: 1,
-      nextBtn: true
+
     }
   },
-  methods: {
+  computed: {
+    roundGraph:function() {
+      const maxVal = Math.max(...this.graph)
+      const minVal = Math.min(...this.graph)
+      if(maxVal === minVal){
+        return this.graph.map(() => 50)
+      } else {
+        return this.graph.map((gr) => {
+          return 5 + ((gr - minVal) * 95) / (maxVal - minVal)
+        })
+      }
 
-    filterCyrrencies() {
-      let start = 6 * (this.currentPage - 1)
-      let end = start + 6
-      const elem = this.currencies
+    },
+
+
+    startCurrency: function (){
+      return 6 * (this.currentPage - 1)
+    },
+    endCurrency: function () {
+      return this.startCurrency + 6
+    },
+    filterCurrencies: function (){
+      return  this.currencies
           .filter(currency => {
             return currency.name.toLowerCase().includes(this.filter.toLowerCase())
           })
-      if(elem.length/6 <= this.currentPage){
-        this.nextBtn = false
-      } else {
-        this.nextBtn = true
-      }
-      return   elem.slice(start, end)
     },
+
+    nextBtn: function (){
+      return this.currencies.length > this.endCurrency
+    },
+
+    paginationCurrencies: function (){
+      return this.filterCurrencies.slice(this.startCurrency, this.endCurrency)
+    },
+    filterUrlParams: function (){
+      return{
+        filter: this.filter,
+        currentPage: this.currentPage
+      }
+    }
+
+  },
+
+  methods: {
+
+    // filterCurrencies() {
+    //   let start = 6 * (this.currentPage - 1)
+    //   let end = start + 6
+    //   const elem = this.currencies
+    //       .filter(currency => {
+    //         return currency.name.toLowerCase().includes(this.filter.toLowerCase())
+    //       })
+    //   if (elem.length / 6 <= this.currentPage) {
+    //     this.nextBtn = false
+    //   } else {
+    //     this.nextBtn = true
+    //   }
+    //   return elem.slice(start, end)
+    // },
 
     async addCurrency(nameTag) {
       let newCurrency = {price: '-', name: nameTag}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
-        this.currencies.push(newCurrency)
+        this.currencies = [...this.currencies, newCurrency]
         this.inputVal = ''
         this.flagDouble = false
-        localStorage.setItem('currencies', JSON.stringify(this.currencies))
-        await this.loadCurrency(newCurrency.name)
+        await this.fetchCoin(newCurrency.name)
         this.tags = []
       } else {
         this.flagDouble = true
@@ -225,29 +265,28 @@ export default {
       }
     },
 
+    async fetchCoin(name) {
+      this.interval = setInterval(async () => {
+        let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
+        try {
+          const data = await request.json()
+          this.currencies.map(cur => {
+            if (cur.name === name) {
+              return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
+            } else {
+              return cur
+            }
+          })
 
-    // async fetchCoin(name) {
-    //   this.interval = setInterval(async () => {
-    //     let request = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${name}&tsyms=USD&api_key=d52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b9841`)
-    //     try {
-    //       const data = await request.json()
-    //       this.currencies.map(cur => {
-    //         if (cur.name === name) {
-    //           return cur.price = data.USD < 1 ? data.USD.toPrecision(2) : data.USD.toFixed(2)
-    //         } else {
-    //           return cur
-    //         }
-    //       })
-    //
-    //       if (this.sel?.name === name) {
-    //         this.graph.push(data.USD)
-    //       }
-    //     } catch (e) {
-    //       console.log('!!! Same error')
-    //       clearInterval(this.interval)
-    //     }
-    //   }, 150000)
-    // },
+          if (this.sel?.name === name) {
+            this.graph.push(data.USD)
+          }
+        } catch (e) {
+          console.log('!!! Same error')
+          clearInterval(this.interval)
+        }
+      }, 150000)
+    },
 
     updtInput() {
       this.filter = ''
@@ -269,7 +308,10 @@ export default {
     deleteCurrency(cur) {
       this.currencies = this.currencies.filter(currency => currency !== cur)
       localStorage.setItem('currencies', JSON.stringify(this.currencies))
-      this.sel = null
+      if(this.sel === cur){
+        this.sel = null
+      }
+
     },
 
     selected(currency) {
@@ -277,13 +319,7 @@ export default {
       this.graph = []
     },
 
-    roundGraph() {
-      const maxVal = Math.max(...this.graph)
-      const minVal = Math.min(...this.graph)
-      return this.graph.map((gr) => {
-        return 5 + ((gr - minVal) * 95) / (maxVal - minVal)
-      })
-    },
+
 
     closeGraph() {
       this.sel = null
@@ -308,46 +344,52 @@ export default {
 
   watch: {
 
-    filter(){
-      this.currentPage = 1
-      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
+    paginationCurrencies() {
+      if(this.paginationCurrencies.length === 0 && this.currentPage > 1){
+        this.currentPage -= 1
+      }
     },
 
-    currentPage(){
-      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
+    filter() {
+      this.currentPage = 1
+      // window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.currentPage}`);
     },
-    //
-    // currencies(val) {
-    //   val.forEach(cur => {
-    //     this.fetchCoin(cur.name)
-    //   })
-    // },
+
+
+
+    filterUrlParams(value){
+      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${value.filter}&page=${value.currentPage}`);
+    },
+
+
+    currencies(val) {
+      localStorage.setItem('currencies', JSON.stringify(this.currencies))
+
+      val.forEach(cur => {
+        this.fetchCoin(cur.name)
+      })
+    },
 
 
   },
 
   created() {
-
-
     const windowData = Object.fromEntries(
         new URL(window.location).searchParams.entries()
     );
-
     if (windowData.filter) {
       this.filter = windowData.filter;
     }
 
     if (windowData.page) {
-      this.page = windowData.page;
+      this.currentPage = windowData.page;
+      console.log(this.currentPage)
     }
 
     this.fetchCrypto()
     let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
     if (localCurrencyes.length > 0) {
       this.currencies = localCurrencyes
-      const arrCyr = []
-      this.currencies.forEach(cur => arrCyr.push(cur.name))
-      loadCurrency(arrCyr)
     }
 
 
