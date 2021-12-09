@@ -238,13 +238,12 @@ export default {
 
   methods: {
 
-    async addCurrency(nameTag) {
+     addCurrency(nameTag) {
       let newCurrency = {price: '-', name: nameTag}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies = [...this.currencies, newCurrency]
         this.inputVal = ''
         this.flagDouble = false
-        // await this.fetchCoin()
         this.tags = []
       } else {
         this.flagDouble = true
@@ -253,17 +252,24 @@ export default {
     },
 
     formatedCurrecy(price){
-      if(price === '') {
-        return
+      if(price === '-') {
+        return '-'
       } else {
         return  price < 1 ? price.toPrecision(2) : price.toFixed(2)
       }
     },
 
     async fetchCoin() {
+      if(this.currencies.length === 0){
+        return
+      }
        const dataCurrency = await loadCurrency(this.currencies.map(cur => cur.name))
-        this.currencies = dataCurrency
-        console.log(this.currencies)
+      this.currencies.forEach((currency) => {
+        const price = dataCurrency[currency.name.toUpperCase()]
+        currency.price = price
+      })
+      console.log(this.currencies)
+        // this.currencies = dataCurrency
         // if (this.sel?.name === name) {
         //     this.graph.push(currencyData.USD)
         // }
@@ -301,8 +307,6 @@ export default {
       this.graph = []
     },
 
-
-
     closeGraph() {
       this.sel = null
     },
@@ -319,8 +323,6 @@ export default {
         this.mainArrayCrypto.push(this.allCrypto[key]['Symbol'])
       }
     },
-
-
   },
 
   watch: {
@@ -355,16 +357,16 @@ export default {
 
     if (windowData.page) {
       this.currentPage = windowData.page;
-      console.log(this.currentPage)
     }
 
     this.fetchCrypto()
     let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
-    if (localCurrencyes.length > 0) {
+    if (localCurrencyes) {
       this.currencies = localCurrencyes
-    }
-    setInterval(this.fetchCoin , 1000)
 
+    }
+
+    setInterval(this.fetchCoin , 1000)
   }
 }
 </script>
