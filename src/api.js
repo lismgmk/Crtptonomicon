@@ -13,5 +13,19 @@ export const loadCurrency = (name) => {
            })
    )
 
+}
+ const objCurrencyes = new Map()
 
+export const subscriberCurrecyes = (currency, cb) => {
+    const currencyesSubscriber = objCurrencyes.get(currency) || []
+    objCurrencyes.set(currency, [...currencyesSubscriber, cb])
+    console.log(objCurrencyes)
+}
+export const unSubscriberCurrecyes = (currency, cb) => {
+    const currencyesSubscriber = objCurrencyes.get(currency) || []
+
+    objCurrencyes.set(
+        currency,
+        currencyesSubscriber.filter(c=> c !== cb)
+        )
 }

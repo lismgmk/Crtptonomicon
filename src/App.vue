@@ -172,7 +172,7 @@
 </template>
 
 <script>
-import {loadCurrency} from "@/api";
+import {loadCurrency, subscriberCurrecyes} from "@/api";
 
 export default {
   data() {
@@ -242,6 +242,7 @@ export default {
       let newCurrency = {price: '-', name: nameTag}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies = [...this.currencies, newCurrency]
+        this.currencies.forEach((currency)=> subscriberCurrecyes(currency.name, ()=>{}))
         this.inputVal = ''
         this.flagDouble = false
         this.tags = []
@@ -363,10 +364,10 @@ export default {
     let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
     if (localCurrencyes) {
       this.currencies = localCurrencyes
-
+      this.currencies.forEach((currency)=> subscriberCurrecyes(currency.name, ()=>{}))
     }
 
-    setInterval(this.fetchCoin , 1000)
+    // setInterval(this.fetchCoin , 1000)
   }
 }
 </script>
