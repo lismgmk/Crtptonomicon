@@ -172,7 +172,7 @@
 </template>
 
 <script>
-import {loadCurrency, subscriberCurrecyes} from "@/api";
+import {subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
 
 export default {
   data() {
@@ -239,10 +239,13 @@ export default {
   methods: {
 
      addCurrency(nameTag) {
-      let newCurrency = {price: '-', name: nameTag}
+      let newCurrency = {price: '-', name: nameTag.toUpperCase()}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies = [...this.currencies, newCurrency]
-        this.currencies.forEach((currency)=> subscriberCurrecyes(currency.name, ()=>{}))
+        subscriberCurrecyes(
+            newCurrency.name,
+            (newPrice) => {this.updateCurrecyes(newCurrency.name, newPrice)}
+        )
         this.inputVal = ''
         this.flagDouble = false
         this.tags = []
@@ -258,23 +261,6 @@ export default {
       } else {
         return  price < 1 ? price.toPrecision(2) : price.toFixed(2)
       }
-    },
-
-    async fetchCoin() {
-      if(this.currencies.length === 0){
-        return
-      }
-       const dataCurrency = await loadCurrency(this.currencies.map(cur => cur.name))
-      this.currencies.forEach((currency) => {
-        const price = dataCurrency[currency.name.toUpperCase()]
-        currency.price = price
-      })
-      console.log(this.currencies)
-        // this.currencies = dataCurrency
-        // if (this.sel?.name === name) {
-        //     this.graph.push(currencyData.USD)
-        // }
-
     },
 
     updtInput() {
@@ -300,7 +286,7 @@ export default {
       if(this.sel === cur){
         this.sel = null
       }
-
+      unSubscriberCurrecyes(cur.name)
     },
 
     selected(currency) {
@@ -324,7 +310,12 @@ export default {
         this.mainArrayCrypto.push(this.allCrypto[key]['Symbol'])
       }
     },
+    updateCurrecyes(currencyName, price) {
+      this.currencies.filter(c => currencyName === c.name).forEach(c => c.price = price)
+    },
   },
+
+
 
   watch: {
 
@@ -361,13 +352,18 @@ export default {
     }
 
     this.fetchCrypto()
-    let localCurrencyes = JSON.parse(localStorage.getItem('currencies'))
+    let localCurrencyes = localStorage.getItem('currencies')
     if (localCurrencyes) {
-      this.currencies = localCurrencyes
-      this.currencies.forEach((currency)=> subscriberCurrecyes(currency.name, ()=>{}))
-    }
+      this.currencies = JSON.parse(localCurrencyes)
+      this.currencies.forEach((currency)=> {
+        subscriberCurrecyes(
+            currency.name,
+            newPrice => this.updateCurrecyes(currency.name, newPrice)
+      )
+      }
 
-    // setInterval(this.fetchCoin , 1000)
+    )
+    }
   }
 }
 </script>
