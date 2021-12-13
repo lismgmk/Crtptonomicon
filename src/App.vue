@@ -311,7 +311,14 @@ export default {
       }
     },
     updateCurrecyes(currencyName, price) {
-      this.currencies.filter(c => currencyName === c.name).forEach(c => c.price = price)
+      this.currencies.filter(c => currencyName === c.name).forEach(c => {
+      if(price !== undefined){
+        c.price = price
+      }
+      if(this.sel !== null && this.sel.name === c.name){
+        this.graph.push(price)
+      }
+      })
     },
   },
 
@@ -361,7 +368,6 @@ export default {
             newPrice => this.updateCurrecyes(currency.name, newPrice)
       )
       }
-
     )
     }
   }
