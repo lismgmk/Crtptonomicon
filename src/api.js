@@ -2,6 +2,18 @@ const API_KEY = 'd52aa675ecbb2b0e1541ef3f89f1efbe2ab21a3bd943ef86e6041794d25b984
 
 const objCurrencyes = new Map()
 
+// const bc = new BroadcastChannel('gator_channel')
+//
+// bc.onmessage = (messageEvent) => {
+//     // If our broadcast message is 'update_title' then get the new title from localStorage
+//     if (messageEvent.data === 'update_title') {
+//         // localStorage is domain specific so when it changes in one window it changes in the other
+//         setTitle(localStorage.getItem('title'));
+//     }
+// }
+// bc.postMessage('update_title');
+
+
 const socket = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`);
 const RESPONSE_PARAM = '5'
 
