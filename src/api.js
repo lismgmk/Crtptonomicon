@@ -1,22 +1,35 @@
 
-
-
 const objCurrencyes = new Map()
 
-const myWorker = new SharedWorker("worker.js");
-myWorker.port.start();
-
-
+const myWorker = new SharedWorker("worker.js")
 
 const bc = new BroadcastChannel('shared_worker')
+
+console.log('api')
+bc.postMessage(`888888`)
+myWorker.port.start()
+
 bc.onmessage = (msg) => {
-    console.log(msg)
-    // const [newCurrency, newPrice] = msg.data
-    // if (objCurrencyes.has(newCurrency)) {
-    //     const handlers = objCurrencyes.get(newCurrency) ?? [];
-    //     handlers.forEach((fn) => fn(newPrice));
-    // }
+    console.log(`Get finish data from port ${msg.data}`)
 }
+
+
+// myWorker.port.postMessage('00000')
+
+myWorker.port.addEventListener('message', (msg) => {
+        console.log(msg.data)
+        // bc.postMessage(`to Vue from port with bc  ${msg.data}`)
+    }
+)
+
+// bc.onmessage = (msg) => {
+//     console.log(msg)
+//     // const [newCurrency, newPrice] = msg.data
+//     // if (objCurrencyes.has(newCurrency)) {
+//     //     const handlers = objCurrencyes.get(newCurrency) ?? [];
+//     //     handlers.forEach((fn) => fn(newPrice));
+//     // }
+// }
 
 // socket.addEventListener('message', function (event) {
 //     const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency} = JSON.parse(event.data)
@@ -35,19 +48,20 @@ bc.onmessage = (msg) => {
 // bc.postMessage(obj)
 // });
 
+
+
 export const subscriberCurrecyes = (currency, cb) => {
-    console.log(currency)
-    bc.postMessage('123')
     const currencyesSubscriber = objCurrencyes.get(currency) || []
     objCurrencyes.set(currency, [...currencyesSubscriber, cb])
-    myWorker.port.postMessage(['subscribe', currency])
-    myWorker.port.postMessage('12345')
+
+    // myWorker.port.postMessage(['subscribe', currency])
+    // myWorker.port.postMessage('12345')
 
 
 }
 
 export const unSubscriberCurrecyes = (currency) => {
     objCurrencyes.delete(currency)
-    myWorker.port.postMessage(['unsubscribe', currency])
+    // myWorker.port.postMessage(['unsubscribe', currency])
 }
 

@@ -347,6 +347,8 @@ export default {
   },
 
   created() {
+    console.log('new')
+
     const windowData = Object.fromEntries(
         new URL(window.location).searchParams.entries()
     );
