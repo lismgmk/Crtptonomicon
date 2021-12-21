@@ -15,9 +15,9 @@ self.onconnect = e => {
     port.onmessage = (e) => {
         const [statusSubscribe, currency] = e.data
 
-
         if (statusSubscribe === 'subscribe') {
             currentIdCurrency.get(connect).push(currency)
+            bc.postMessage(['newCurrencyList', currentIdCurrency.get(connect)])
             currentIdCurrency.get(connect).forEach(i => {
                     subscriberCurrecyesWC(i)
                 }
@@ -37,7 +37,7 @@ self.onconnect = e => {
 
 socket.onmessage = function (event) {
     const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency} = JSON.parse(event.data)
-    // console.log(newCurrency, newPrice, type)
+    console.log(newCurrency, newPrice, type)
     bc.postMessage([newCurrency, newPrice, type])
 }
 
@@ -67,71 +67,3 @@ const helperSubcriberWebSocket = (message) => {
 
 }
 
-
-//
-//
-//
-//
-// const bc = new BroadcastChannel('shared_worker')
-// // const RESPONSE_PARAM = '5'
-// // const connects = Map()
-//
-// let connect = 0
-// console.log('worker')
-// self.onconnect = e => {
-//
-//     const port = e.ports[0]
-//     const id = connect++
-//     // connects.set(id, [])
-//     port.start()
-
-//     //     port.onmessage = ({data: [type, ticker]}) => {
-//     //     switch (type) {
-//     //         case 'subscribe':
-//     //             connects.get(id).push(ticker);
-//     //             subscriberCurrecyesWC(ticker);
-//     //             break;
-//     //         case 'unsubscribe':
-//     //
-//     //             connects.set(
-//     //                 id,
-//     //                 connects.get(id).filter((t) => t !== ticker),
-//     //             );
-//     //             // eslint-disable-next-line no-case-declarations
-//     //             let isLast = true;
-//     //             connects.forEach((item) => {
-//     //                 if (item.includes(ticker)) {
-//     //                     isLast = false;
-//     //                 }
-//     //             });
-//     //             if (isLast) {
-//     //                 unSubscriberCurrecyesWC(ticker)
-//     //             }
-//     //             break;
-//     //     }
-//     // }
-// }
-
-
-// bc.onmessage = (msg) => {
-//     console.log(msg)
-//     // const [newCurrency, newPrice] = msg.data
-//     // if (objCurrencyes.has(newCurrency)) {
-//     //     const handlers = objCurrencyes.get(newCurrency) ?? [];
-//     //     handlers.forEach((fn) => fn(newPrice));
-//     // }
-// }
-
-
-// socket.addEventListener('message', function (event) {
-//     console.log(event)
-//     const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency} = JSON.parse(event.data)
-//     if (type !== RESPONSE_PARAM || newPrice === undefined) {
-//         return
-//     }
-//     bc.postMessage([newCurrency, newPrice])
-// });
-
-//
-
-//

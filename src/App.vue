@@ -363,6 +363,8 @@ export default {
     let localCurrencyes = localStorage.getItem('currencies')
     if (localCurrencyes) {
       this.currencies = JSON.parse(localCurrencyes)
+
+
       this.currencies.forEach((currency)=> {
         subscriberCurrecyes(
             currency.name,

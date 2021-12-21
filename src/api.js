@@ -7,6 +7,10 @@ const bc = new BroadcastChannel('shared_worker')
 myWorker.port.start()
 
 bc.onmessage = (msg) => {
+
+if(msg.data[0] === 'newCurrencyList'){
+    console.log(msg.data[1])
+}
     const [newCurrency, newPrice, type] = msg.data
     if (type === '5' && newPrice !== undefined) {
         const handlers = objCurrencyes.get(newCurrency) ?? [];
@@ -16,8 +20,8 @@ bc.onmessage = (msg) => {
 
 }
 
+
 export const subscriberCurrecyes = (currency, cb) => {
-    console.log(currency)
     const currencyesSubscriber = objCurrencyes.get(currency) || []
     objCurrencyes.set(currency, [...currencyesSubscriber, cb])
     myWorker.port.postMessage(['subscribe', currency])
