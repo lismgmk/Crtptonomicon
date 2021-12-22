@@ -38,7 +38,7 @@ self.onconnect = e => {
 socket.onmessage = function (event) {
     const response = JSON.parse(event.data)
     const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency, TOSYMBOL: symbol} = response
-
+//fix there
     let currentValueCurrensy
     let currentValuePriceCurrensy
     console.log(currentValueCurrensy, currentValuePriceCurrensy)
