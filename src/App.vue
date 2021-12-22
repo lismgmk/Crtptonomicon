@@ -90,9 +90,11 @@
             :key="index"
             v-for="(currency, index) in paginationCurrencies"
             :class="{
-            'border-4': sel === currency
+            'border-4': sel === currency,
+            'bg-red-100': currency.empty === true,
+            'bg-white': currency.empty === false
         }"
-            class="bg-white  overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
+            class="overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
         >
           <div class="px-4 py-5 sm:p-6 text-center">
             <dt class="text-sm font-medium text-gray-500 truncate">
@@ -177,6 +179,8 @@ import {subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
 export default {
   data() {
     return {
+      // emptyPrise: true,
+
       inputVal: '',
       currencies: [],
       sel: null,
@@ -193,10 +197,10 @@ export default {
     }
   },
   computed: {
-    roundGraph:function() {
+    roundGraph: function () {
       const maxVal = Math.max(...this.graph)
       const minVal = Math.min(...this.graph)
-      if(maxVal === minVal){
+      if (maxVal === minVal) {
         return this.graph.map(() => 50)
       } else {
         return this.graph.map((gr) => {
@@ -207,28 +211,28 @@ export default {
     },
 
 
-    startCurrency: function (){
+    startCurrency: function () {
       return 6 * (this.currentPage - 1)
     },
     endCurrency: function () {
       return this.startCurrency + 6
     },
-    filterCurrencies: function (){
-      return  this.currencies
+    filterCurrencies: function () {
+      return this.currencies
           .filter(currency => {
             return currency.name.toLowerCase().includes(this.filter.toLowerCase())
           })
     },
 
-    nextBtn: function (){
+    nextBtn: function () {
       return this.currencies.length > this.endCurrency
     },
 
-    paginationCurrencies: function (){
+    paginationCurrencies: function () {
       return this.filterCurrencies.slice(this.startCurrency, this.endCurrency)
     },
-    filterUrlParams: function (){
-      return{
+    filterUrlParams: function () {
+      return {
         filter: this.filter,
         currentPage: this.currentPage
       }
@@ -238,13 +242,15 @@ export default {
 
   methods: {
 
-     addCurrency(nameTag) {
-      let newCurrency = {price: '-', name: nameTag.toUpperCase()}
+    addCurrency(nameTag) {
+      let newCurrency = {price: '-', name: nameTag.toUpperCase(), empty: false}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies = [...this.currencies, newCurrency]
         subscriberCurrecyes(
             newCurrency.name,
-            (newPrice) => {this.updateCurrecyes(newCurrency.name, newPrice)}
+            (newPrice) => {
+              this.updateCurrecyes(newCurrency.name, newPrice)
+            }
         )
         this.inputVal = ''
         this.flagDouble = false
@@ -255,11 +261,11 @@ export default {
       }
     },
 
-    formatedCurrecy(price){
-      if(price === '-') {
+    formatedCurrecy(price) {
+      if (price === '-') {
         return '-'
       } else {
-        return  price < 1 ? price.toPrecision(2) : price.toFixed(2)
+        return price < 1 ? price.toPrecision(2) : price.toFixed(2)
       }
     },
 
@@ -283,7 +289,7 @@ export default {
     deleteCurrency(cur) {
       this.currencies = this.currencies.filter(currency => currency !== cur)
       localStorage.setItem('currencies', JSON.stringify(this.currencies))
-      if(this.sel === cur){
+      if (this.sel === cur) {
         this.sel = null
       }
       unSubscriberCurrecyes(cur.name)
@@ -311,23 +317,34 @@ export default {
       }
     },
     updateCurrecyes(currencyName, price) {
+      console.log(currencyName, price)
       this.currencies.filter(c => currencyName === c.name).forEach(c => {
-      if(price !== undefined){
-        c.price = price
-      }
-      if(this.sel !== null && this.sel.name === c.name){
-        this.graph.push(price)
-      }
+        if (price !== undefined) {
+          // this.emptyPrise = false
+          c.empty = false
+          c.price = price
+        }
+        if (price === 'invalid') {
+          // this.emptyPrise = true
+          c.empty = true
+          c.price = '-'
+        }
+        if (this.sel !== null && this.sel.name === c.name) {
+          this.graph.push(price)
+        }
       })
     },
   },
 
 
-
   watch: {
+    emptyPrise() {
+      return this.emptyPrise
+    },
+
 
     paginationCurrencies() {
-      if(this.paginationCurrencies.length === 0 && this.currentPage > 1){
+      if (this.paginationCurrencies.length === 0 && this.currentPage > 1) {
         this.currentPage -= 1
       }
     },
@@ -336,13 +353,15 @@ export default {
       this.currentPage = 1
     },
 
-    filterUrlParams(value){
+    filterUrlParams(value) {
       window.history.pushState(null, document.title, `${window.location.pathname}?filter=${value.filter}&page=${value.currentPage}`);
     },
 
     currencies() {
       localStorage.setItem('currencies', JSON.stringify(this.currencies))
+
     },
+
 
   },
 
@@ -365,13 +384,13 @@ export default {
       this.currencies = JSON.parse(localCurrencyes)
 
 
-      this.currencies.forEach((currency)=> {
-        subscriberCurrecyes(
-            currency.name,
-            newPrice => this.updateCurrecyes(currency.name, newPrice)
+      this.currencies.forEach((currency) => {
+            subscriberCurrecyes(
+                currency.name,
+                newPrice => this.updateCurrecyes(currency.name, newPrice)
+            )
+          }
       )
-      }
-    )
     }
   }
 }

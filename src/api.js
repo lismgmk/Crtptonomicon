@@ -7,15 +7,20 @@ const bc = new BroadcastChannel('shared_worker')
 myWorker.port.start()
 
 bc.onmessage = (msg) => {
-
-if(msg.data[0] === 'newCurrencyList'){
-    console.log(msg.data[1])
-}
+    console.log(msg.data)
+    // if (msg.data[0] === 'newCurrencyList') {
+    //     // console.log(msg.data[1])
+    // }
     const [newCurrency, newPrice, type] = msg.data
+
     if (type === '5' && newPrice !== undefined) {
         const handlers = objCurrencyes.get(newCurrency) ?? [];
         handlers.forEach((fn) => fn(newPrice));
 
+    }
+    if(type === '500'){
+        const handlers = objCurrencyes.get(newCurrency) ?? [];
+        handlers.forEach((fn) => fn(newPrice));
     }
 
 }

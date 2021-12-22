@@ -17,15 +17,15 @@ self.onconnect = e => {
 
         if (statusSubscribe === 'subscribe') {
             currentIdCurrency.get(connect).push(currency)
-            bc.postMessage(['newCurrencyList', currentIdCurrency.get(connect)])
+            // bc.postMessage(['newCurrencyList', currentIdCurrency.get(connect)])
             currentIdCurrency.get(connect).forEach(i => {
-                    subscriberCurrecyesWC(i)
+                    subscriberCurrecyesWC(i, 'USD')
                 }
             )
         }
         if (statusSubscribe === 'unsubscribe') {
             currentIdCurrency.get(connect).filter(i => i !== currency)
-            unSubscriberCurrecyesWC(currency)
+            unSubscriberCurrecyesWC(currency, 'XRP')
             // Object.entries(currentIdCurrency).forEach((i) => {
             //     console.log(i)
             // })
@@ -36,23 +36,72 @@ self.onconnect = e => {
 }
 
 socket.onmessage = function (event) {
-    const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency} = JSON.parse(event.data)
-    console.log(newCurrency, newPrice, type)
-    bc.postMessage([newCurrency, newPrice, type])
+    const response = JSON.parse(event.data)
+    const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency, TOSYMBOL: symbol} = response
+
+    let currentValueCurrensy
+    let currentValuePriceCurrensy
+    console.log(currentValueCurrensy, currentValuePriceCurrensy)
+    let flag = false
+    console.log(flag, 'first')
+    if(flag === true){
+        console.log(currentValueCurrensy,'second')
+
+        bc.postMessage([currentValueCurrensy, currentValuePriceCurrensy * newPrice, type])
+        flag = false
+        currentValueCurrensy = ''
+    }
+if(flag === false){
+    if(response.TYPE === '5'){
+
+        if(symbol === 'USD'){
+            bc.postMessage([newCurrency, newPrice, type])
+        }
+        if(symbol === 'BTC'){
+            subscriberCurrecyesWC('BTC', 'USD')
+            flag = true
+            currentValuePriceCurrensy = newPrice
+            currentValueCurrensy = newCurrency
+            console.log(currentValueCurrensy, 'first')
+            console.log(flag,'second')
+        }
+
+    }
 }
 
 
-const subscriberCurrecyesWC = (currebcyValue) => {
+    if(response.MESSAGE === 'INVALID_SUB'){
+        const {TYPE: type, MESSAGE: message, PARAMETER: param} = response
+        console.log(type, message, param)
+        const newCurrency = param.split('~')[2]
+        const responseCurChang = param.split('~')[3]
+        if(responseCurChang === 'BTC'){
+            bc.postMessage([newCurrency, 'invalid', type])
+        }
+        if(responseCurChang === 'USD'){
+            subscriberCurrecyesWC(newCurrency, 'BTC')
+        }
+    }
+    // const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency, MESSAGE: message} = JSON.parse(event.data)
+    // if(message === 'INVALID-SUB'){
+    //     bc.postMessage([newCurrency, 'invalid', type])
+    // }
+    // SUBSCRIPTION_UNRECOGNIZED
+
+}
+
+
+const subscriberCurrecyesWC = (currebcyValue, curChange) => {
     helperSubcriberWebSocket(JSON.stringify({
         "action": "SubAdd",
-        "subs": [`5~CCCAGG~${currebcyValue}~USD`]
+        "subs": [`5~CCCAGG~${currebcyValue}~${curChange}`]
     }))
 }
 
-const unSubscriberCurrecyesWC = (currebcyValue) => {
+const unSubscriberCurrecyesWC = (currebcyValue, curChange) => {
     helperSubcriberWebSocket(JSON.stringify({
         "action": "SubRemove",
-        "subs": [`5~CCCAGG~${currebcyValue}~USD`]
+        "subs": [`5~CCCAGG~${currebcyValue}~${curChange}`]
     }))
 }
 
