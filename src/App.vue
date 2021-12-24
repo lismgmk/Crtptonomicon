@@ -317,7 +317,7 @@ export default {
       }
     },
     updateCurrecyes(currencyName, price) {
-      console.log(currencyName, price)
+      // console.log(currencyName, price)
       this.currencies.filter(c => currencyName === c.name).forEach(c => {
         if (price !== undefined) {
           // this.emptyPrise = false

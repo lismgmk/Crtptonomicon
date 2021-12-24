@@ -26,75 +26,38 @@ self.onconnect = e => {
         if (statusSubscribe === 'unsubscribe') {
             currentIdCurrency.get(connect).filter(i => i !== currency)
             unSubscriberCurrecyesWC(currency, 'USD')
-            // Object.entries(currentIdCurrency).forEach((i) => {
-            //     console.log(i)
-            // })
         }
 
 
     }
 }
+let newType = ''
 
 socket.onmessage = function (event) {
     const response = JSON.parse(event.data)
     const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency, TOSYMBOL: symbol} = response
 
-    // let currentValueCurrensy
-    // let currentValuePriceCurrensy
-    // console.log(currentValueCurrensy, currentValuePriceCurrensy)
+    console.log(newCurrency, newPrice)
 
-    // let flag
-    // console.log(flag, 'first')
 
-    // if (flag === true) {
-    //     console.log(currentValueCurrensy, 'second')
-    //
-    //     bc.postMessage([currentValueCurrensy, currentValuePriceCurrensy * newPrice, type])
-    //     flag = false
-    //     currentValueCurrensy = ''
-    // }
-    // if (flag === false) {
-    let priceBTCinUSD = 0
-    console.log(priceBTCinUSD, 'upBTCPR')
-
-    if (newCurrency === 'BTC') {
-        // console.log(newCurrency, 'inUppppp')
-        priceBTCinUSD = newPrice
-        // subscriberCurrecyesWC(prevCur, 'BTC')
-    }
 
     if (response.TYPE === '5') {
         if (symbol === 'USD') {
-            bc.postMessage([newCurrency, newPrice, type])
+            newType = 'correct'
+            bc.postMessage([newCurrency, newPrice, type, newType])
+
+            if(newCurrency === 'BTC'){
+                newType = 'convertCurBTC'
+                bc.postMessage([newCurrency, newPrice, type, newType])
+            }
         }
         if (symbol === 'BTC') {
-
-            let coinCur = newPrice
-           let prevCur = newCurrency
-            console.log(newCurrency, newPrice, '!!!!!!!!!!', priceBTCinUSD)
-            if (newCurrency !== 'BTC' && priceBTCinUSD !== 0) {
-
-                return new Promise(function(resolve) {
-                    subscriberCurrecyesWC(prevCur, 'BTC')
-                    resolve(prevCur);
-                }).then(data => {
-                    bc.postMessage([newCurrency, priceBTCinUSD * coinCur, type])
-                    console.log(data, 'promis')})
-
-
-
+            if (newCurrency !== 'BTC') {
+                newType = 'convertCur'
+                bc.postMessage([newCurrency, newPrice, type, newType])
             }
-
-
-            // subscriberCurrecyesWC('USD', 'BTC')
-            // flag = true
-            // currentValuePriceCurrensy = newPrice
-            // currentValueCurrensy = newCurrency
-            // console.log(currentValueCurrensy, 'first')
-            // console.log(flag, 'second')
         }
     }
-    // }
 
     if (response.MESSAGE === 'INVALID_SUB') {
         const {TYPE: type, PARAMETER: param} = response
@@ -110,12 +73,6 @@ socket.onmessage = function (event) {
             subscriberCurrecyesWC(curFromInvalidResp, 'BTC')
         }
     }
-    // const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency, MESSAGE: message} = JSON.parse(event.data)
-    // if(message === 'INVALID-SUB'){
-    //     bc.postMessage([newCurrency, 'invalid', type])
-    // }
-    // SUBSCRIPTION_UNRECOGNIZED
-
 }
 
 
