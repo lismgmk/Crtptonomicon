@@ -6,29 +6,34 @@ let currentIdCurrency = new Map()
 let connect = 0
 
 self.onconnect = e => {
-
+    console.log(e, 'PORT')
     const port = e.ports[0]
     connect++
     currentIdCurrency.set(connect, [])
     port.start()
 
+
     port.onmessage = (e) => {
+
         const [statusSubscribe, currency] = e.data
 
         if (statusSubscribe === 'subscribe') {
             currentIdCurrency.get(connect).push(currency)
-            // bc.postMessage(['newCurrencyList', currentIdCurrency.get(connect)])
+            console.log(currentIdCurrency, 'MAP')
+            // bc.postMessage(['newCurrencyList-add', currentIdCurrency.get(connect)])
             currentIdCurrency.get(connect).forEach(i => {
                     subscriberCurrecyesWC(i, 'USD')
                 }
             )
         }
         if (statusSubscribe === 'unsubscribe') {
-            currentIdCurrency.get(connect).filter(i => i !== currency)
+            console.log(connect, 'chanel Unsub')
+
+            currentIdCurrency.set(connect, currentIdCurrency.get(connect).filter(i => i !== currency))
             unSubscriberCurrecyesWC(currency, 'USD')
+            console.log(currentIdCurrency, 'MAP-del')
+            // bc.postMessage(['newCurrencyList-dell', currentIdCurrency.get(connect)])
         }
-
-
     }
 }
 let newType = ''
@@ -36,10 +41,6 @@ let newType = ''
 socket.onmessage = function (event) {
     const response = JSON.parse(event.data)
     const {TYPE: type, PRICE: newPrice, FROMSYMBOL: newCurrency, TOSYMBOL: symbol} = response
-
-    console.log(newCurrency, newPrice)
-
-
 
     if (response.TYPE === '5') {
         if (symbol === 'USD') {

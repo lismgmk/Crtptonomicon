@@ -179,7 +179,6 @@ import {subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
 export default {
   data() {
     return {
-      // emptyPrise: true,
 
       inputVal: '',
       currencies: [],
@@ -316,6 +315,7 @@ export default {
         this.mainArrayCrypto.push(this.allCrypto[key]['Symbol'])
       }
     },
+
     updateCurrecyes(currencyName, price) {
       // console.log(currencyName, price)
       this.currencies.filter(c => currencyName === c.name).forEach(c => {
@@ -338,9 +338,7 @@ export default {
 
 
   watch: {
-    emptyPrise() {
-      return this.emptyPrise
-    },
+
 
 
     paginationCurrencies() {
@@ -358,6 +356,7 @@ export default {
     },
 
     currencies() {
+
       localStorage.setItem('currencies', JSON.stringify(this.currencies))
 
     },
@@ -366,7 +365,6 @@ export default {
   },
 
   created() {
-
     const windowData = Object.fromEntries(
         new URL(window.location).searchParams.entries()
     );

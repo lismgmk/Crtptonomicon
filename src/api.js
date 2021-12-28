@@ -1,5 +1,4 @@
 const objCurrencyes = new Map()
-
 const myWorker = new SharedWorker("worker.js")
 
 const bc = new BroadcastChannel('shared_worker')
@@ -14,6 +13,10 @@ let convertCurPrice = 0
 bc.onmessage = (msg) => {
 
     let [newCurrency, newPrice, type, newType] = msg.data
+
+
+
+
     if (type === '5' && newPrice !== undefined) {
 
         if (newType === 'convertCurBTC') {
