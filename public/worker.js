@@ -20,7 +20,7 @@ self.onconnect = e => {
         if (statusSubscribe === 'subscribe') {
             currentIdCurrency.get(connect).push(currency)
             console.log(currentIdCurrency, 'MAP')
-            // bc.postMessage(['newCurrencyList-add', currentIdCurrency.get(connect)])
+            bc.postMessage(['newCurrencyList-add', currentIdCurrency.get(connect)])
             currentIdCurrency.get(connect).forEach(i => {
                     subscriberCurrecyesWC(i, 'USD')
                 }

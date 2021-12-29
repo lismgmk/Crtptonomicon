@@ -62,3 +62,9 @@ export const unSubscriberCurrecyes = (currency) => {
     myWorker.port.postMessage(['unsubscribe', currency])
 }
 
+export   const getCurrensyTags = async () => {
+    console.log('start')
+    let response = await fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
+    const data = await response.json()
+    return data.Data
+}

@@ -135,13 +135,18 @@
       <h3 class="text-lg leading-6 font-medium text-gray-900 my-8">
         {{ sel.name }} - USD
       </h3>
-      <div class="flex items-end border-gray-600 border-b border-l h-64">
+      <div
+          ref="graphArea"
+          class="flex items-end border-gray-600 border-b border-l h-64">
         <div
             :key="index"
             v-for="(gr, index) in roundGraph"
-            :style="{ height: `${gr}%`}"
+            :style="{
+              height: `${gr}%`,
+            }"
             class="bg-purple-800 border w-10"
-        ></div>
+        >
+        </div>
       </div>
       <button
           type="button"
@@ -174,7 +179,7 @@
 </template>
 
 <script>
-import {subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
+import {getCurrensyTags, subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
 
 export default {
   data() {
@@ -184,7 +189,10 @@ export default {
       currencies: [],
       sel: null,
       interval: null,
+
       graph: [],
+      countGraph: 0,
+
       allCrypto: {},
       mainArrayCrypto: [],
       tags: [],
@@ -196,7 +204,9 @@ export default {
     }
   },
   computed: {
+
     roundGraph: function () {
+      console.log(this.graph,'graph')
       const maxVal = Math.max(...this.graph)
       const minVal = Math.min(...this.graph)
       if (maxVal === minVal) {
@@ -240,6 +250,12 @@ export default {
   },
 
   methods: {
+    countNumberGraph(){
+      if(!this.$refs.graphArea){
+        return
+      }
+      return this.countGraph = this.$refs.graphArea.clientWidth / 38
+    },
 
     addCurrency(nameTag) {
       let newCurrency = {price: '-', name: nameTag.toUpperCase(), empty: false}
@@ -295,6 +311,7 @@ export default {
     },
 
     selected(currency) {
+      console.log(this.$refs.graphArea)
       this.sel = currency
       this.graph = []
     },
@@ -302,11 +319,9 @@ export default {
     closeGraph() {
       this.sel = null
     },
-
     async fetchCrypto() {
-      let response = await fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
-      const data = await response.json()
-      this.allCrypto = data.Data
+      let data = await getCurrensyTags()
+      this.allCrypto = data
       this.createMainArr()
     },
 
@@ -317,28 +332,32 @@ export default {
     },
 
     updateCurrecyes(currencyName, price) {
-      // console.log(currencyName, price)
+
+      console.log(this.graph, 'updated')
       this.currencies.filter(c => currencyName === c.name).forEach(c => {
         if (price !== undefined) {
-          // this.emptyPrise = false
           c.empty = false
           c.price = price
         }
         if (price === 'invalid') {
-          // this.emptyPrise = true
           c.empty = true
           c.price = '-'
         }
         if (this.sel !== null && this.sel.name === c.name) {
           this.graph.push(price)
+          while (this.graph.length > this.countGraph) {
+            this.graph.shift()
+
+          }
         }
       })
+
+
     },
   },
 
 
   watch: {
-
 
 
     paginationCurrencies() {
@@ -363,8 +382,16 @@ export default {
 
 
   },
+  mounted() {
+   window.addEventListener('resize', this.countNumberGraph)
+    },
+
+  beforeMount() {
+    window.removeEventListener('resize', this.countNumberGraph)
+  },
 
   created() {
+
     const windowData = Object.fromEntries(
         new URL(window.location).searchParams.entries()
     );
@@ -380,8 +407,6 @@ export default {
     let localCurrencyes = localStorage.getItem('currencies')
     if (localCurrencyes) {
       this.currencies = JSON.parse(localCurrencyes)
-
-
       this.currencies.forEach((currency) => {
             subscriberCurrecyes(
                 currency.name,
