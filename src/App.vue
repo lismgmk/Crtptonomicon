@@ -143,8 +143,9 @@
             v-for="(gr, index) in roundGraph"
             :style="{
               height: `${gr}%`,
+              weight: `${45}px`
             }"
-            class="bg-purple-800 border w-10"
+            class="bg-purple-800 border"
         >
         </div>
       </div>
@@ -191,7 +192,7 @@ export default {
       interval: null,
 
       graph: [],
-      countGraph: 0,
+      countGraph: 1,
 
       allCrypto: {},
       mainArrayCrypto: [],
@@ -206,7 +207,6 @@ export default {
   computed: {
 
     roundGraph: function () {
-      console.log(this.graph,'graph')
       const maxVal = Math.max(...this.graph)
       const minVal = Math.min(...this.graph)
       if (maxVal === minVal) {
@@ -311,7 +311,6 @@ export default {
     },
 
     selected(currency) {
-      console.log(this.$refs.graphArea)
       this.sel = currency
       this.graph = []
     },
@@ -333,7 +332,6 @@ export default {
 
     updateCurrecyes(currencyName, price) {
 
-      console.log(this.graph, 'updated')
       this.currencies.filter(c => currencyName === c.name).forEach(c => {
         if (price !== undefined) {
           c.empty = false
@@ -344,7 +342,14 @@ export default {
           c.price = '-'
         }
         if (this.sel !== null && this.sel.name === c.name) {
+
           this.graph.push(price)
+          if(this.$refs.graphArea === null){
+            this.countGraph = 1
+          } else{
+            this.countGraph = this.$refs.graphArea.clientWidth / 38
+          }
+
           while (this.graph.length > this.countGraph) {
             this.graph.shift()
 
@@ -391,7 +396,7 @@ export default {
   },
 
   created() {
-
+this.sel = null
     const windowData = Object.fromEntries(
         new URL(window.location).searchParams.entries()
     );
