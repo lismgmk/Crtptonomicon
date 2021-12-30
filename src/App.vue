@@ -139,13 +139,15 @@
           ref="graphArea"
           class="flex items-end border-gray-600 border-b border-l h-64">
         <div
+            ref="graphColumn"
             :key="index"
             v-for="(gr, index) in roundGraph"
             :style="{
               height: `${gr}%`,
-              weight: `${45}px`
+              'width': `${widthColumnGraph}px`
             }"
-            class="bg-purple-800 border"
+            class="bg-purple-800 border w-10"
+
         >
         </div>
       </div>
@@ -193,6 +195,8 @@ export default {
 
       graph: [],
       countGraph: 1,
+      widthColumnGraph: 90,
+
 
       allCrypto: {},
       mainArrayCrypto: [],
@@ -218,7 +222,6 @@ export default {
       }
 
     },
-
 
     startCurrency: function () {
       return 6 * (this.currentPage - 1)
@@ -254,7 +257,8 @@ export default {
       if(!this.$refs.graphArea){
         return
       }
-      return this.countGraph = this.$refs.graphArea.clientWidth / 38
+      console.log(this.$refs.graphColumn.clientWidth, 'width column')
+      return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
     },
 
     addCurrency(nameTag) {
@@ -347,7 +351,7 @@ export default {
           if(this.$refs.graphArea === null){
             this.countGraph = 1
           } else{
-            this.countGraph = this.$refs.graphArea.clientWidth / 38
+            this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
           }
 
           while (this.graph.length > this.countGraph) {
@@ -380,11 +384,8 @@ export default {
     },
 
     currencies() {
-
       localStorage.setItem('currencies', JSON.stringify(this.currencies))
-
     },
-
 
   },
   mounted() {
