@@ -257,7 +257,14 @@ export default {
       if(!this.$refs.graphArea){
         return
       }
-      console.log(this.$refs.graphColumn.clientWidth, 'width column')
+
+      // let k  = this.$refs.graphColumn.clientWidth
+      let k  = this.widthColumnGraph-2
+      console.log(k, 'prev=>', this.$refs.graphColumn.clientWidth)
+      if(this.widthColumnGraph -2 > k){
+      this.graph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
+      }
+
       return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
     },
 
@@ -347,10 +354,14 @@ export default {
         }
         if (this.sel !== null && this.sel.name === c.name) {
 
+
+
           this.graph.push(price)
           if(this.$refs.graphArea === null){
             this.countGraph = 1
           } else{
+            console.log(this.$refs.graphColumn.clientWidth, 'prev update=>', this.widthColumnGraph)
+
             this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
           }
 
