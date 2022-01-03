@@ -50,7 +50,7 @@
         Добавить
       </button>
     </section>
-
+<!--    <add-currency/>-->
 
     <template v-if="currencies.length">
       <div>
@@ -179,12 +179,22 @@
       </button>
     </section>
   </div>
+  <add-currency/>
+  <plus-single-icon />
 </template>
 
 <script>
 import {getCurrensyTags, subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
+import AddCurrency from '@/components/AddCurrency.vue';
+import PlusSingleIcon from '@/components/PlusSignIcon.vue';
 
 export default {
+  name: 'App',
+
+  components: {
+    AddCurrency, PlusSingleIcon
+  },
+
   data() {
     return {
 
