@@ -257,9 +257,12 @@ export default {
       if (!this.$refs.graphArea) {
         return
       }
-      if(+this.widthColumnGraph -5 > this.$refs.graphColumn.clientWidth){
-      this.graph = this.graph.filter((i, index)=> index < 3)
+      if (this.$refs.graphColumn) {
+        if (+this.widthColumnGraph - 5 > this.$refs.graphColumn.clientWidth) {
+          this.graph = this.graph.filter((i, index) => index < 3)
+        }
       }
+
       return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
     },
 
@@ -318,7 +321,7 @@ export default {
 
     selected(currency) {
       this.sel = currency
-      this.graph = []
+
     },
 
     closeGraph() {
@@ -353,7 +356,7 @@ export default {
             this.countGraph = 1
           }
 
-          this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
+          // this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
           while (this.graph.length > this.countGraph) {
             this.graph.shift()
 
@@ -367,7 +370,10 @@ export default {
 
 
   watch: {
-
+    sel() {
+      this.graph = []
+      this.$nextTick().then(this.countNumberGraph)
+    },
 
     paginationCurrencies() {
       if (this.paginationCurrencies.length === 0 && this.currentPage > 1) {
