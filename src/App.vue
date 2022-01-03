@@ -195,7 +195,7 @@ export default {
 
       graph: [],
       countGraph: 1,
-      widthColumnGraph: 90,
+      widthColumnGraph: 40,
 
 
       allCrypto: {},
@@ -253,18 +253,13 @@ export default {
   },
 
   methods: {
-    countNumberGraph(){
-      if(!this.$refs.graphArea){
+    countNumberGraph() {
+      if (!this.$refs.graphArea) {
         return
       }
-
-      // let k  = this.$refs.graphColumn.clientWidth
-      let k  = this.widthColumnGraph-2
-      console.log(k, 'prev=>', this.$refs.graphColumn.clientWidth)
-      if(this.widthColumnGraph -2 > k){
-      this.graph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
+      if(+this.widthColumnGraph -5 > this.$refs.graphColumn.clientWidth){
+      this.graph = this.graph.filter((i, index)=> index < 3)
       }
-
       return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
     },
 
@@ -353,18 +348,12 @@ export default {
           c.price = '-'
         }
         if (this.sel !== null && this.sel.name === c.name) {
-
-
-
           this.graph.push(price)
-          if(this.$refs.graphArea === null){
+          if (this.$refs.graphArea === null) {
             this.countGraph = 1
-          } else{
-            console.log(this.$refs.graphColumn.clientWidth, 'prev update=>', this.widthColumnGraph)
-
-            this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
           }
 
+          this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
           while (this.graph.length > this.countGraph) {
             this.graph.shift()
 
@@ -400,15 +389,15 @@ export default {
 
   },
   mounted() {
-   window.addEventListener('resize', this.countNumberGraph)
-    },
+    window.addEventListener('resize', this.countNumberGraph)
+  },
 
   beforeMount() {
     window.removeEventListener('resize', this.countNumberGraph)
   },
 
   created() {
-this.sel = null
+    this.sel = null
     const windowData = Object.fromEntries(
         new URL(window.location).searchParams.entries()
     );
