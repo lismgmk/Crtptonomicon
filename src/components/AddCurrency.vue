@@ -9,7 +9,7 @@
         <div class="mt-1 relative rounded-md shadow-md">
           <input
               @keydown.enter="addCurrency"
-              v-model="inputVal"
+              v-bind:="getInpuFromParent"
               @input="updtInput"
               type="text"
               name="wallet"
@@ -41,25 +41,24 @@ import PlusSingleIcon from './PlusSignIcon.vue'
 export default {
   name: 'AddCurrency',
   props: ['newInput'],
+
   components: {
     PlusSingleIcon
   },
-  data(){
-    return {
-      inputVal: ''
+
+  computed:{
+    getInpuFromParent(){
+      console.log(this.newInput, 'input in computed')
+      return this.newInput
     }
   },
-  watch:{
-    newInput: function(newVal) {
-      console.log(newVal, '3 watch new props ')
-      this.inputVal = newVal
-    }
-  },
+
+
   methods: {
     addOnlyValue() {
-      let k = {price: '-', name: this.inputVal.toUpperCase(), empty: false}
-      console.log(k, '1 send to App Obj')
-      return  {price: '-', name: this.inputVal.toUpperCase(), empty: false}
+      // let k = {price: '-', name: this.inputVal.toUpperCase(), empty: false}
+      // console.log(k, '1 send to App Obj')
+      return  {price: '-', name: this.getInpuFromParent.toUpperCase(), empty: false}
 
       // if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
       //   this.currencies = [...this.currencies, newCurrency]

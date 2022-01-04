@@ -315,7 +315,7 @@ export default {
         this.tags = []
       } else {
         this.flagDouble = true
-        this.inputVal = newCurrency
+        this.inputVal = newCurrency.name
       }
     },
 
