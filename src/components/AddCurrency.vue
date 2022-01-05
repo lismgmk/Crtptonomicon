@@ -7,16 +7,7 @@
         >Тикер</label
         >
         <div class="mt-1 relative rounded-md shadow-md">
-          <input
-              @keydown.enter="addCurrency"
-              v-bind:="getInpuFromParent"
-              @input="updtInput"
-              type="text"
-              name="wallet"
-              id="wallet"
-              class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
-              placeholder="Например DOGE"
-          />
+
         </div>
         <div class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap">
             <span
@@ -32,7 +23,17 @@
     </div>
 
     <plus-single-icon
-        v-on:click = "$emit('inputFromAddCur', addOnlyValue())"/>
+        v-on:click='addOnlyValue'/>
+
+    <input
+        @keydown.enter="addOnlyValue"
+        v-model="inputVal"
+        type="text"
+        name="wallet"
+        id="wallet"
+        class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
+        placeholder="Например DOGE"
+    />
   </section>
 </template>
 <script>
@@ -40,26 +41,43 @@ import PlusSingleIcon from './PlusSignIcon.vue'
 
 export default {
   name: 'AddCurrency',
-  props: ['newInput'],
-
+  props: {
+    flagDouble:{
+      default: ''
+    }},
+  model:{
+    prop: 'inputVal',
+    event: 'input'
+  },
+  data() {
+    return {
+      inputVal: ''
+    }
+  },
   components: {
     PlusSingleIcon
   },
-
-  computed:{
-    getInpuFromParent(){
-      console.log(this.newInput, 'input in computed')
-      return this.newInput
-    }
+  watch: {
+    flagDouble(){
+      console.log(this.flagDouble, 'llllll944646464644442')
+      return this.flagDouble
+    },
   },
-
+computed:{
+    computInputValue: function (){
+      if(!this.flagDouble){
+        return ''}else{
+        return this.inputVal
+      }
+    }
+},
 
   methods: {
     addOnlyValue() {
-      // let k = {price: '-', name: this.inputVal.toUpperCase(), empty: false}
-      // console.log(k, '1 send to App Obj')
-      return  {price: '-', name: this.getInpuFromParent.toUpperCase(), empty: false}
-
+      const currentUnput = {price: '-', name: this.inputVal.toUpperCase(), empty: false}
+      console.log(this.inputVal, 'inputVal')
+      this.$emit('inputFromAddCur', currentUnput)
+// this.inputVal = this.computInputValue
       // if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
       //   this.currencies = [...this.currencies, newCurrency]
       //   subscriberCurrecyes(

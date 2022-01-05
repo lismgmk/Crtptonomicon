@@ -184,7 +184,7 @@
   </div>
   <add-currency
       v-on:inputFromAddCur="addCurrency"
-      v-bind:newInput='inputVal'
+      v-bind:flagDouble='this.flagDouble'
   />
 </template>
 
@@ -214,11 +214,10 @@ export default {
       allCrypto: {},
       mainArrayCrypto: [],
       tags: [],
-      flagDouble: false,
+      flagDouble: null,
 
       filter: '',
       currentPage: 1,
-
     }
   },
   computed: {
@@ -261,7 +260,7 @@ export default {
         filter: this.filter,
         currentPage: this.currentPage
       }
-    }
+    },
 
   },
 
@@ -278,7 +277,6 @@ export default {
 
       return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
     },
-
     // addCurrency(nameTag) {
     //   let newCurrency = {price: '-', name: nameTag.toUpperCase(), empty: false}
     //   if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
@@ -297,8 +295,8 @@ export default {
     //     this.inputVal = nameTag
     //   }
     // },
+
     addCurrency(newCurrency) {
-      console.log(newCurrency, '2 get recently input Val from child')
       // let newCurrency = {price: '-', name: nameTag.toUpperCase(), empty: false}
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
         this.currencies = [...this.currencies, newCurrency]
@@ -309,14 +307,14 @@ export default {
             }
         )
 
-        this.inputVal = ''
-        console.log(this.inputVal)
         this.flagDouble = false
+        console.log(this.flagDouble, 'heeerree  1')
         this.tags = []
-      } else {
-        this.flagDouble = true
-        this.inputVal = newCurrency.name
       }
+      else {
+        this.flagDouble = true
+      }
+
     },
 
     formatedCurrecy(price) {
@@ -404,9 +402,9 @@ export default {
 
 
   watch: {
-    inputVal(){
-      console.log(this.inputVal, 'watch input')
-      return this.inputVal
+    flagDouble(){
+      console.log(this.flagDouble, 'flag 2')
+      return this.flagDouble
     },
     sel() {
       this.graph = []
