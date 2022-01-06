@@ -18,7 +18,7 @@
               {{ tag }}
             </span>
         </div>
-        <div v-show="flagDouble" class="text-sm text-red-600">Такой тикер уже добавлен</div>
+        <div v-show="flagDouble == null" class="text-sm text-red-600"> Такой тикер уже добавлен</div>
       </div>
     </div>
 
@@ -28,6 +28,7 @@
     <input
         @keydown.enter="addOnlyValue"
         v-model="inputVal"
+        @input="enterNewVal"
         type="text"
         name="wallet"
         id="wallet"
@@ -42,41 +43,36 @@ import PlusSingleIcon from './PlusSignIcon.vue'
 export default {
   name: 'AddCurrency',
   props: {
-    flagDouble:{
+    flagDouble: {
+      type: String,
       default: ''
-    }},
-  model:{
-    prop: 'inputVal',
-    event: 'input'
+    }
   },
   data() {
     return {
-      inputVal: ''
+      inputVal: '',
     }
-  },
-  components: {
-    PlusSingleIcon
   },
   watch: {
-    flagDouble(){
-      console.log(this.flagDouble, 'llllll944646464644442')
-      return this.flagDouble
-    },
-  },
-computed:{
-    computInputValue: function (){
-      if(!this.flagDouble){
-        return ''}else{
-        return this.inputVal
+    flagDouble(val) {
+      console.log(val, 'current')
+      if (val) {
+        this.inputVal = ''
       }
+      // if(val !== prev && val === false){
+      //   this.inputVal = ''
+      // }
     }
-},
-
+  },
   methods: {
+    enterNewVal(){
+      this.$emit('clear-warning-entry', null)
+    },
     addOnlyValue() {
-      const currentUnput = {price: '-', name: this.inputVal.toUpperCase(), empty: false}
-      console.log(this.inputVal, 'inputVal')
-      this.$emit('inputFromAddCur', currentUnput)
+      const currentInput = {price: '-', name: this.inputVal.toUpperCase(), empty: false}
+      this.$emit('currency-input-value', currentInput)
+      // this.innerFlag = true
+      // this.inputVal = ''
 // this.inputVal = this.computInputValue
       // if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
       //   this.currencies = [...this.currencies, newCurrency]

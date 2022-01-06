@@ -191,6 +191,7 @@
 <script>
 import {getCurrensyTags, subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
 import AddCurrency from '@/components/AddCurrency.vue';
+import {nanoid} from "nanoid";
 
 export default {
   name: 'App',
@@ -214,7 +215,7 @@ export default {
       allCrypto: {},
       mainArrayCrypto: [],
       tags: [],
-      flagDouble: null,
+      flagDouble: '',
 
       filter: '',
       currentPage: 1,
@@ -265,6 +266,9 @@ export default {
   },
 
   methods: {
+    clearWarningEntry(val){
+      this.flagDouble = val
+    },
     countNumberGraph() {
       if (!this.$refs.graphArea) {
         return
@@ -306,13 +310,13 @@ export default {
               this.updateCurrecyes(newCurrency.name, newPrice)
             }
         )
-
-        this.flagDouble = false
-        console.log(this.flagDouble, 'heeerree  1')
+        this.flagDouble = nanoid()
+        // this.flagDouble = true
         this.tags = []
       }
       else {
-        this.flagDouble = true
+        console.log('don"d')
+        this.flagDouble = null
       }
 
     },
