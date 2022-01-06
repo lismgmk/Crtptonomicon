@@ -215,7 +215,10 @@ export default {
       allCrypto: {},
       mainArrayCrypto: [],
       tags: [],
-      flagDouble: '',
+      // flagDouble: '',
+      flagDouble: {
+        doubleFlag: '', warningEntryFlag: false
+      },
 
       filter: '',
       currentPage: 1,
@@ -310,13 +313,14 @@ export default {
               this.updateCurrecyes(newCurrency.name, newPrice)
             }
         )
-        this.flagDouble = nanoid()
+        // this.flagDouble = nanoid()
+        this.flagDouble = {doubleFlag: nanoid(), warningEntryFlag: false}
         // this.flagDouble = true
         this.tags = []
       }
       else {
         console.log('don"d')
-        this.flagDouble = null
+        this.flagDouble = {doubleFlag: null, warningEntryFlag: true}
       }
 
     },

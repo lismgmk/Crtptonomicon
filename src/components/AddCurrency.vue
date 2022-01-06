@@ -18,7 +18,7 @@
               {{ tag }}
             </span>
         </div>
-        <div v-show="flagDouble == null" class="text-sm text-red-600"> Такой тикер уже добавлен</div>
+        <div v-show="warningEntry" class="text-sm text-red-600"> Такой тикер уже добавлен</div>
       </div>
     </div>
 
@@ -44,20 +44,31 @@ export default {
   name: 'AddCurrency',
   props: {
     flagDouble: {
-      type: String,
-      default: ''
-    }
+      // type: String,
+      type: Object,
+      default: function () {
+        return {
+          doubleFlag: '', warningEntryFlag: false
+        }
+      }
+    },
   },
   data() {
     return {
       inputVal: '',
+      warningEntry: false
     }
   },
   watch: {
     flagDouble(val) {
-      console.log(val, 'current')
-      if (val) {
+      console.log(val.doubleFlag, 'current')
+      if (val.doubleFlag) {
         this.inputVal = ''
+      }
+      if(val.warningEntryFlag === true){
+        this.warningEntry = true
+      } else{
+        this.warningEntry = false
       }
       // if(val !== prev && val === false){
       //   this.inputVal = ''
@@ -65,8 +76,8 @@ export default {
     }
   },
   methods: {
-    enterNewVal(){
-      this.$emit('clear-warning-entry', null)
+    enterNewVal() {
+      this.warningEntry = false
     },
     addOnlyValue() {
       const currentInput = {price: '-', name: this.inputVal.toUpperCase(), empty: false}
