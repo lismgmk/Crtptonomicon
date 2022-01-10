@@ -14,9 +14,6 @@ bc.onmessage = (msg) => {
 
     let [newCurrency, newPrice, type, newType] = msg.data
 
-
-
-
     if (type === '5' && newPrice !== undefined) {
 
         if (newType === 'convertCurBTC') {
@@ -33,8 +30,6 @@ bc.onmessage = (msg) => {
                 newPrice = convertCurBTCPrice * convertCurPrice
                 runFulfil(newCurrency, newPrice)
                 convertCurBTCPrice = 0
-                // convertCur = ''
-                // convertCurPrice = 0
             }
 
             runFulfil(newCurrency, newPrice)
@@ -63,7 +58,6 @@ export const unSubscriberCurrecyes = (currency) => {
 }
 
 export   const getCurrensyTags = async () => {
-    console.log('start')
     let response = await fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
     const data = await response.json()
     return data.Data
