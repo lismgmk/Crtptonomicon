@@ -2,7 +2,7 @@
   <button
       type="button"
       class="absolute top-0 right-0"
-      @click="closeGraph"
+      @click="lockSelect"
   >
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -29,7 +29,17 @@
 
 <script>
 export default {
-  name: "DeleteGraphButton"
+  name: "DeleteGraphButton",
+  emits: {
+    'lock-select': value => {
+      return typeof value === 'boolean'
+    }
+  },
+  methods: {
+    lockSelect(){
+      this.$emit('lock-select', false)
+    }
+  }
 }
 </script>
 

@@ -19,7 +19,7 @@
       >
       </div>
     </div>
-    <delete-graph-button @click="closeGraph"/>
+    <delete-graph-button @lock-select="lockGraph"/>
 
   </section>
 </template>
@@ -29,18 +29,41 @@ import DeleteGraphButton from "@/components/GraphElem/DeleteGraphButton";
 export default {
   name: "GraphElem",
   components: {DeleteGraphButton},
+  emits: {
+    'lock-select': value => {
+      return typeof value === 'boolean'
+    }
+  },
+  data() {
+    return {
+      graph: [],
+      countGraph: 1,
+      widthColumnGraph: 40,
+    }
+  },
+
+
   props: {
     select:{
       type: Array
     },
-    graph: {
-      type: Array
+    price: {
+      type: String
     }
   },
   watch: {
     select(val){
       console.log(val, 'props select')
     },
+    price(val){
+      this.graph.push(val)
+      if (this.$refs.graphArea === null) {
+        this.countGraph = 1
+      }
+      while (this.graph.length > this.countGraph) {
+        this.graph.shift()
+      }
+    }
 
   },
   computed: {
@@ -56,7 +79,36 @@ export default {
       }
 
     },
-  }
+
+
+  },
+
+  methods: {
+    lockGraph(val){
+      this.graph = []
+      this.$emit('lock-select', val)
+    },
+    countNumberGraph() {
+      if (!this.$refs.graphArea) {
+        return
+      }
+      if (this.$refs.graphColumn) {
+        if (+this.widthColumnGraph - 5 > this.$refs.graphColumn.clientWidth) {
+          this.graph = this.graph.filter((i, index) => index < 3)
+        }
+      }
+
+      return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
+    },
+  },
+
+  mounted() {
+    window.addEventListener('resize', this.countNumberGraph)
+  },
+
+  beforeMount() {
+    window.removeEventListener('resize', this.countNumberGraph)
+  },
 }
 </script>
 

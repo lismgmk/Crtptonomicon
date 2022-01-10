@@ -85,14 +85,18 @@
 
       </dl>
       <hr class="w-full border-t border-gray-600 my-4"/>
+      <GraphElem
+          :select="sel"
+                 :price="currentPrice"
+          @lock-select="sel = false"
+      />
     </template>
 
 
   </div>
-  <add-currency
-      v-on:inputFromAddCur="addCurrency"
-      v-bind:flagDouble='this.flagDouble'
-  />
+
+
+
 </template>
 
 <script>
@@ -113,13 +117,13 @@ export default {
 
       inputVal: '',
       currencies: [],
-      sel: null,
+      sel: false,
       interval: null,
 
-      graph: [],
-      countGraph: 1,
-      widthColumnGraph: 40,
-
+      // graph: [],
+      // countGraph: 1,
+      // widthColumnGraph: 40,
+      currentPrice: '',
 
       allCrypto: {},
       mainArrayCrypto: [],
@@ -177,18 +181,18 @@ export default {
   },
 
   methods: {
-    countNumberGraph() {
-      if (!this.$refs.graphArea) {
-        return
-      }
-      if (this.$refs.graphColumn) {
-        if (+this.widthColumnGraph - 5 > this.$refs.graphColumn.clientWidth) {
-          this.graph = this.graph.filter((i, index) => index < 3)
-        }
-      }
-
-      return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
-    },
+    // countNumberGraph() {
+    //   if (!this.$refs.graphArea) {
+    //     return
+    //   }
+    //   if (this.$refs.graphColumn) {
+    //     if (+this.widthColumnGraph - 5 > this.$refs.graphColumn.clientWidth) {
+    //       this.graph = this.graph.filter((i, index) => index < 3)
+    //     }
+    //   }
+    //
+    //   return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
+    // },
 
     addCurrency(newCurrency) {
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
@@ -204,7 +208,6 @@ export default {
       } else {
         this.flagDouble = {doubleFlag: null, warningEntryFlag: true}
       }
-
     },
 
     formatedCurrecy(price) {
@@ -271,16 +274,16 @@ export default {
           c.price = '-'
         }
         if (this.sel !== null && this.sel.name === c.name) {
-          this.graph.push(price)
-          if (this.$refs.graphArea === null) {
-            this.countGraph = 1
-          }
-
-          // this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
-          while (this.graph.length > this.countGraph) {
-            this.graph.shift()
-
-          }
+this.currentPrice = price
+          // this.graph.push(price)
+          // if (this.$refs.graphArea === null) {
+          //   this.countGraph = 1
+          // }
+          //
+          // while (this.graph.length > this.countGraph) {
+          //   this.graph.shift()
+          //
+          // }
         }
       })
 
@@ -290,6 +293,9 @@ export default {
 
 
   watch: {
+    currentPrice(){
+      return this.currentPrice
+    },
     graph() {
       return this.graph
     },
@@ -325,13 +331,13 @@ export default {
     },
 
   },
-  mounted() {
-    window.addEventListener('resize', this.countNumberGraph)
-  },
-
-  beforeMount() {
-    window.removeEventListener('resize', this.countNumberGraph)
-  },
+  // mounted() {
+  //   window.addEventListener('resize', this.countNumberGraph)
+  // },
+  //
+  // beforeMount() {
+  //   window.removeEventListener('resize', this.countNumberGraph)
+  // },
 
   created() {
     this.sel = null

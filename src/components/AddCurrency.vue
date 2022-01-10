@@ -40,6 +40,7 @@ import PromptTags from "@/components/PromptTags";
 
 export default {
   name: 'AddCurrency',
+  components:{PlusSingleIcon, PromptTags},
   props: {
     flagDouble: {
       type: Object,
