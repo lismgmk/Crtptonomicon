@@ -45,15 +45,16 @@ export default {
 
   props: {
     select:{
-      type: Array
+      type: [Object,Boolean]
     },
     price: {
-      type: String
+      type: Number
     }
   },
   watch: {
-    select(val){
-      console.log(val, 'props select')
+    select(){
+      this.graph = []
+      this.$nextTick().then(this.countNumberGraph)
     },
     price(val){
       this.graph.push(val)
@@ -85,7 +86,6 @@ export default {
 
   methods: {
     lockGraph(val){
-      this.graph = []
       this.$emit('lock-select', val)
     },
     countNumberGraph() {

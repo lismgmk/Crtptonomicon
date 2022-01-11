@@ -36,7 +36,7 @@
 </template>
 <script>
 import PlusSingleIcon from './PlusSignIcon.vue'
-import PromptTags from "@/components/PromptTags";
+import PromptTags from "@/components/AddCurrencyElem/PromptTags";
 
 export default {
   name: 'AddCurrency',
@@ -63,7 +63,7 @@ export default {
   },
   emits: {
     'currency-input-value': value => {
-      return typeof value === "string"
+      return typeof value === "object"
     },
     'input-value-for-tags': value => {
       return typeof value === "string"

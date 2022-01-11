@@ -87,7 +87,7 @@
       <hr class="w-full border-t border-gray-600 my-4"/>
       <GraphElem
           :select="sel"
-                 :price="currentPrice"
+          :price="currentPrice"
           @lock-select="sel = false"
       />
     </template>
@@ -96,12 +96,11 @@
   </div>
 
 
-
 </template>
 
 <script>
 import {getCurrensyTags, subscriberCurrecyes, unSubscriberCurrecyes} from "@/api";
-import AddCurrency from '@/components/AddCurrency.vue';
+import AddCurrency from '@/components/AddCurrencyElem/AddCurrency.vue';
 import {nanoid} from "nanoid";
 import GraphElem from "@/components/GraphElem/GraphElem";
 
@@ -120,10 +119,7 @@ export default {
       sel: false,
       interval: null,
 
-      // graph: [],
-      // countGraph: 1,
-      // widthColumnGraph: 40,
-      currentPrice: '',
+      currentPrice: 0,
 
       allCrypto: {},
       mainArrayCrypto: [],
@@ -137,19 +133,6 @@ export default {
     }
   },
   computed: {
-
-    // roundGraph: function () {
-    //   const maxVal = Math.max(...this.graph)
-    //   const minVal = Math.min(...this.graph)
-    //   if (maxVal === minVal) {
-    //     return this.graph.map(() => 50)
-    //   } else {
-    //     return this.graph.map((gr) => {
-    //       return 5 + ((gr - minVal) * 95) / (maxVal - minVal)
-    //     })
-    //   }
-    //
-    // },
 
     startCurrency: function () {
       return 6 * (this.currentPage - 1)
@@ -181,18 +164,6 @@ export default {
   },
 
   methods: {
-    // countNumberGraph() {
-    //   if (!this.$refs.graphArea) {
-    //     return
-    //   }
-    //   if (this.$refs.graphColumn) {
-    //     if (+this.widthColumnGraph - 5 > this.$refs.graphColumn.clientWidth) {
-    //       this.graph = this.graph.filter((i, index) => index < 3)
-    //     }
-    //   }
-    //
-    //   return this.countGraph = this.$refs.graphArea.clientWidth / this.widthColumnGraph
-    // },
 
     addCurrency(newCurrency) {
       if (this.currencies.filter(currency => currency.name === newCurrency.name).length === 0) {
@@ -274,16 +245,7 @@ export default {
           c.price = '-'
         }
         if (this.sel !== null && this.sel.name === c.name) {
-this.currentPrice = price
-          // this.graph.push(price)
-          // if (this.$refs.graphArea === null) {
-          //   this.countGraph = 1
-          // }
-          //
-          // while (this.graph.length > this.countGraph) {
-          //   this.graph.shift()
-          //
-          // }
+          this.currentPrice = price
         }
       })
 
@@ -293,7 +255,7 @@ this.currentPrice = price
 
 
   watch: {
-    currentPrice(){
+    currentPrice() {
       return this.currentPrice
     },
     graph() {
@@ -307,10 +269,7 @@ this.currentPrice = price
     flagDouble() {
       return this.flagDouble
     },
-    sel() {
-      this.graph = []
-      this.$nextTick().then(this.countNumberGraph)
-    },
+
 
     paginationCurrencies() {
       if (this.paginationCurrencies.length === 0 && this.currentPage > 1) {
@@ -331,13 +290,6 @@ this.currentPrice = price
     },
 
   },
-  // mounted() {
-  //   window.addEventListener('resize', this.countNumberGraph)
-  // },
-  //
-  // beforeMount() {
-  //   window.removeEventListener('resize', this.countNumberGraph)
-  // },
 
   created() {
     this.sel = null
